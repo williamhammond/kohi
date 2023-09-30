@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "platform/platform.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -21,11 +22,9 @@ void log_output(log_level level, const char* message, ...) {
         "[DEBUG]",
         "[TRACE]"
     };
-    // b8 is_error = level <= LOG_LEVEL_ERROR;
 
-    // TODO: Configure this size, document or maybe assert?
-    // 32k character is the maximum length of a single log message
-    char out_message[32000];
+    const i32 msg_length = 32000;
+    char out_message[msg_length];
     memset(out_message, 0, sizeof(out_message));
 
     // Format original message.
@@ -37,9 +36,13 @@ void log_output(log_level level, const char* message, ...) {
     vsnprintf(out_message, sizeof(out_message), message, arg_ptr);
     va_end(arg_ptr);
 
-    char formatted_buffer[32000];
+    char formatted_buffer[msg_length];
     sprintf(formatted_buffer, "%s %s\n", level_strings[level], out_message);
 
-    // TODO: Platform specific logging
-    printf("%s", formatted_buffer);
+    b8 is_error = level <= LOG_LEVEL_ERROR;
+    if (is_error) {
+        platform_console_write_error(formatted_buffer, level);
+    } else {
+        platform_console_write(formatted_buffer, level);
+    }
 }

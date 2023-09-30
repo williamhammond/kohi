@@ -48,7 +48,7 @@ STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 #elif defined(__linux__) || defined(__gnu_linux__)
 #define K_PLATFORM_LINUX 1
 #if defined(__ANDROID__)
-#define KPLATFORM_ANDROID 1
+#define K_PLATFORM_ANDROID 1
 #endif
 
 #elif(__unix__)
