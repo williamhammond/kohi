@@ -3,6 +3,7 @@
 #include "game_types.h"
 #include "logger.h"
 #include "platform/platform.h"
+#include "core/event.h"
 
 typedef struct application_state {
     game* game_inst;
@@ -36,6 +37,11 @@ b8 applicaton_create(game* game_inst) {
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
+
+    if (!event_initialize()) {
+        KFATAL("Failed to initialize event system");
+        return FALSE;
+    }
 
     if (!platform_startup(&app_state.platform,
         game_inst->app_config.name,
@@ -81,6 +87,8 @@ b8 applicaton_run() {
         }
         platform_sleep(1);
     }
+
+    event_shutdown();
     
     // TODO: maybe explicitly set is_running to FALSE here?
     // app_state.is_running = FALSE;
