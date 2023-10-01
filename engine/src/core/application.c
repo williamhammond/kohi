@@ -1,4 +1,5 @@
 #include "application.h"
+#include "core/kmemory.h"
 #include "game_types.h"
 #include "logger.h"
 #include "platform/platform.h"
@@ -59,6 +60,7 @@ b8 applicaton_create(game* game_inst) {
 }
 
 b8 applicaton_run() {
+    KINFO(get_memory_usage_str());
     while (app_state.is_running) {
         if(!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
