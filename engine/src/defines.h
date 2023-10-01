@@ -16,6 +16,10 @@ typedef double f64;
 typedef int b32;
 typedef char b8;
 
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
 #if defined(__clang__) || defined(__gcc__)
 #define STATIC_ASSERT _Static_assert
 #else

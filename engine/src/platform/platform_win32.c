@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "core/logger.h"
+#include "core/input.h"
 
 typedef struct internal_state {
     HINSTANCE h_instance;
@@ -204,31 +205,39 @@ b8 platform_startup(
             case WM_SYSKEYDOWN:
             case WM_KEYUP:
             case WM_SYSKEYUP: {
-                // b8 pressed = (message == WM_KEYDOWN) || (message == WM_SYSKEYDOWN);
-                // TODO: input processing
+                b8 pressed = (message == WM_KEYDOWN) || (message == WM_SYSKEYDOWN);
+                keys key = (u16) w_param;
+                input_process_key(key, pressed);
             } break;
             case WM_MOUSEMOVE: {
-                // i32 x_position = GET_X_LPARAM(l_param);
-                // i32 y_position = GET_Y_LPARAM(l_param);
-                // TODO: input processing
+                i32 x_position = GET_X_LPARAM(l_param);
+                i32 y_position = GET_Y_LPARAM(l_param);
+                input_process_mouse_move(x_position, y_position);
             } break;
             case WM_MOUSEWHEEL: {
-                // i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
-                // if (z_delta != 0) {
-                //     // Flatten the input to an OS-indepdendent (-1, 1)
-                //     z_delta = (z_delta < 0) ? -1 : 1;
-                // }
-                // TODO: input processing
+                i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
+                if (z_delta != 0) {
+                    // Some mouse wheels take into account sensitivity on the wheel.
+                    // We only care about up or down, so we normalize to
+                    // a platform indepdendent -1 or 1
+                    z_delta = (z_delta < 0) ? -1 : 1;
+                    input_process_mouse_wheel(z_delta);
+                }
             } break;
             case WM_LBUTTONDOWN:
             case WM_LBUTTONUP:
+                input_process_mouse_button(BUTTON_LEFT, (b8)(message == WM_LBUTTONDOWN)); 
+                break;
+
             case WM_RBUTTONDOWN:
             case WM_RBUTTONUP:
+                input_process_mouse_button(BUTTON_RIGHT, message == WM_RBUTTONDOWN); 
+                break;
+
             case WM_MBUTTONDOWN:
-            case WM_MBUTTONUP: {
-                // b8 pressed = (message == WM_LBUTTONDOWN) || (message == WM_RBUTTONDOWN) || (message == WM_MBUTTONDOWN);
-                // TODO: input processing
-            } break;
+            case WM_MBUTTONUP: 
+                input_process_mouse_button(BUTTON_MIDDLE, message == WM_MBUTTONDOWN); 
+                break;
         }
 
         return DefWindowProcA(window, message, w_param, l_param);
