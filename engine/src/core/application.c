@@ -1,6 +1,7 @@
 #include "application.h"
 #include "game_types.h"
 
+#include "core/clock.h"
 #include "core/input.h"
 #include "core/kmemory.h"
 #include "core/logger.h"
@@ -15,8 +16,12 @@ typedef struct application_state {
     platform_state platform;
     i16 width;
     i16 height;
+    clock clock;
     f64 last_time;
 } application_state;
+
+// TODO: Configure this
+static b8 limit_frames = FALSE;
 
 static b8 initialized = FALSE;
 static application_state app_state;
@@ -76,33 +81,57 @@ b8 applicaton_create(game* game_inst) {
 }
 
 b8 applicaton_run() {
-    KINFO(get_memory_usage_str());
+    clock_start(&app_state.clock);
+    clock_update(&app_state.clock);
+    app_state.last_time = app_state.clock.elapsed;
+    f64 running_time = 0.0f;
+    u8 frame_count = 0;
+    f64 target_frame_seconds = 1.0f / 60.0f;
+
     while (app_state.is_running) {
         if(!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
         }
         if (!app_state.is_suspended) {
-            // TODO fix time delta
-            if (!app_state.game_inst->update(app_state.game_inst, (f32)0)) {
+            clock_update(&app_state.clock);
+            f64 current_time = app_state.clock.elapsed;
+            f64 delta_time = current_time - app_state.last_time;
+            f64 frame_start_time = platform_get_absolute_time();
+            if (!app_state.game_inst->update(app_state.game_inst, delta_time)) {
                 KFATAL("Game update failed. shutting down");
                 app_state.is_running = FALSE;
                 break;
             }
 
-            if (!app_state.game_inst->render(app_state.game_inst, (f32)0)) {
+            if (!app_state.game_inst->render(app_state.game_inst, delta_time)) {
                 KFATAL("Game render failed. shutting down");
                 app_state.is_running = FALSE;
                 break;
             }
+
+            f64 frame_end_time = platform_get_absolute_time();
+            f64 frame_elapsed_time = frame_end_time - frame_start_time;
+            running_time += frame_elapsed_time;
+            f64 remaining_time = target_frame_seconds - frame_elapsed_time;
+            if (remaining_time > 0) {
+                u64 remaining_ms = (remaining_time * 1000.0f);
+                if (remaining_ms > 0 && limit_frames) {
+                    platform_sleep(remaining_ms - 1);
+                }
+            }
+
+            frame_count++;
 
             // TODO: Handle input at the top of frame?
             // Input update/state copying should always be handled
             // after any input should be recorded; I.E. before this line.
             // As a safety, input is the last thing to be updated before
             // this frame ends.
-            input_update(0);
+            input_update(delta_time);
+
+            // TODO: See if current time should be gotten here
+            app_state.last_time = current_time;
         }
-        platform_sleep(1);
     }
 
     event_unregister(EVENT_CODE_APPLICATION_QUIT, NULL, application_on_event);
