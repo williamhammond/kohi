@@ -9,6 +9,8 @@
 
 #include "platform/platform.h"
 
+#include "renderer/renderer_frontend.h"
+
 typedef struct application_state {
     game* game_inst;
     b8 is_running;
@@ -40,13 +42,6 @@ b8 applicaton_create(game* game_inst) {
     initialize_logging();
     initialize_input();
 
-    KINFO("PI: %f", 3.14159265359f);
-    KERROR("PI: %f", 3.14159265359f);
-    KFATAL("PI: %f", 3.14159265359f);
-    KWARN("PI: %f", 3.14159265359f);
-    KDEBUG("PI: %f", 3.14159265359f);
-    KTRACE("PI: %f", 3.14159265359f);
-
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
 
@@ -61,6 +56,11 @@ b8 applicaton_create(game* game_inst) {
         game_inst->app_config.start_width, 
         game_inst->app_config.start_height)) {
 
+        return FALSE;
+    }
+
+    if (!renderer_initialize(game_inst->app_config.name, &app_state.platform)) {
+        KFATAL("Failed to initialize renderer. Shutting down...");
         return FALSE;
     }
 
@@ -97,6 +97,7 @@ b8 applicaton_run() {
             f64 current_time = app_state.clock.elapsed;
             f64 delta_time = current_time - app_state.last_time;
             f64 frame_start_time = platform_get_absolute_time();
+
             if (!app_state.game_inst->update(app_state.game_inst, delta_time)) {
                 KFATAL("Game update failed. shutting down");
                 app_state.is_running = FALSE;
@@ -108,6 +109,11 @@ b8 applicaton_run() {
                 app_state.is_running = FALSE;
                 break;
             }
+
+            // TODO: Handle this in the renderer
+            render_packet packet;
+            packet.delta_time = delta_time;
+            renderer_draw_frame(&packet);
 
             f64 frame_end_time = platform_get_absolute_time();
             f64 frame_elapsed_time = frame_end_time - frame_start_time;
@@ -140,6 +146,8 @@ b8 applicaton_run() {
 
     event_shutdown();
     input_shutdown();
+
+    renderer_shutdown();
     
     // TODO: maybe explicitly set is_running to FALSE here?
     // app_state.is_running = FALSE;
