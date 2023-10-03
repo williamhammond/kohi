@@ -11,9 +11,15 @@
 #include "core/logger.h"
 #include "core/input.h"
 
+// TODO: Find a way to keep all this vulkan stuff out of the platform code
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+#include "renderer/vulkan/vulkan_types.inl"
+
 typedef struct internal_state {
     HINSTANCE h_instance;
     HWND window;
+    VkSurfaceKHR surface;
 } internal_state;
 
 static f64 clock_frequency;
@@ -188,6 +194,22 @@ b8 platform_startup(
     // declared in vulkan_platform.h
     void platform_get_required_extension_names(const char*** names_darray) {
         darray_push(*names_darray, &"VK_KHR_win32_surface");
+    }
+
+    b8 platform_create_vulkan_surface(platform_state* plat_state, vulkan_context* context) {
+        internal_state *state = (internal_state*)plat_state->internal_state;
+
+        VkWin32SurfaceCreateInfoKHR create_info = { VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR };
+        create_info.hinstance = state->h_instance;
+        create_info.hwnd = state->window;
+
+        VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &context->surface);
+        if (result != VK_SUCCESS) {
+            KFATAL("Vulkan surface creation failed.");
+            return FALSE;
+        }
+        context->surface = state->surface;
+        return TRUE;
     }
 
     LRESULT CALLBACK win32_process_message(HWND window, UINT message, WPARAM w_param, LPARAM l_param) {

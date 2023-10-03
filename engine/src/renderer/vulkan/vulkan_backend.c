@@ -6,6 +6,7 @@
 #include "vulkan_platform.h"
 #include "vulkan_backend.h"
 #include "vulkan_types.inl"
+#include "vulkan_devices.h"
 
 
 static vulkan_context context;
@@ -75,7 +76,6 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
             return FALSE;
         }
     }
-
 #endif
 
     create_info.ppEnabledLayerNames = required_validation_layer_names;
@@ -102,6 +102,18 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
     VK_CHECK(func(context.instance, &debug_create_info, context.allocator, &context.debug_messenger));
     KDEBUG("Vulkan debugger created");
 #endif
+
+    KDEBUG("Creating Vulkan surface...");
+    if (!platform_create_vulkan_surface(plat_state, &context)) {
+        KERROR("Failed to create platform surface");
+        return FALSE;
+    }
+    KDEBUG("Vulkan surface created");
+
+    if (!vulkan_device_create(&context)) {
+        KERROR("Failed to create vulkan device");
+        return FALSE;
+    }
     return TRUE;
 }
 
