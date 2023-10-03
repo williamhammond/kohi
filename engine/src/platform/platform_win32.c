@@ -6,6 +6,8 @@
 #include <windowsx.h>
 #include <stdlib.h>
 
+#include "containers/darray.h"
+
 #include "core/logger.h"
 #include "core/input.h"
 
@@ -181,6 +183,11 @@ b8 platform_startup(
 
     void platform_sleep(u64 ms) {
         Sleep(ms);
+    }
+
+    // declared in vulkan_platform.h
+    void platform_get_required_extension_names(const char*** names_darray) {
+        darray_push(*names_darray, &"VK_KHR_win32_surface");
     }
 
     LRESULT CALLBACK win32_process_message(HWND window, UINT message, WPARAM w_param, LPARAM l_param) {

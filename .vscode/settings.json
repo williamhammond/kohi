@@ -1,6 +1,2 @@
 {
-    "files.associations": {
-        "logger.h": "c",
-        "cstdio": "c"
-    }
 }
