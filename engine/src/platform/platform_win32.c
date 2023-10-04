@@ -203,7 +203,7 @@ b8 platform_startup(
         create_info.hinstance = state->h_instance;
         create_info.hwnd = state->window;
 
-        VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &context->surface);
+        VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &state->surface);
         if (result != VK_SUCCESS) {
             KFATAL("Vulkan surface creation failed.");
             return FALSE;
