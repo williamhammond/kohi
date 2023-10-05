@@ -119,7 +119,7 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
 
 void vulkan_shutdown(renderer_backend* backend) {
     KDEBUG("Destroying Vulkan device");
-    vulkan_device_destory(&context);
+    vulkan_device_destroy(&context);
 
     KDEBUG("Destroying Vulkan surface");
     if (context.surface) {
