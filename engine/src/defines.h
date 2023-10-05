@@ -95,3 +95,5 @@ STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 #endif
 
 #endif
+
+#define KCLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value;

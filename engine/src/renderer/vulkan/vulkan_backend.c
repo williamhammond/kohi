@@ -7,6 +7,7 @@
 #include "vulkan_backend.h"
 #include "vulkan_types.inl"
 #include "vulkan_device.h"
+#include "vulkan_swapchain.h"
 
 
 static vulkan_context context;
@@ -17,7 +18,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     VkDebugUtilsMessageTypeFlagsEXT message_types,
     const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data);
 
+i32 find_memory_index(u32 type_filter, u32 property_flags);
+
 b8 vulkan_initialize(renderer_backend* backend, const char* application_name, struct platform_state* plat_state) {
+    context.find_memory_index = find_memory_index;
+
     // TODO: Implement custom allocator
     context.allocator = NULL;
 
@@ -114,10 +119,19 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
         KERROR("Failed to create vulkan device");
         return FALSE;
     }
+
+    vulkan_swapchain_create(
+        &context,
+        context.framebuffer_width,
+        context.framebuffer_height,
+        &context.swapchain);
+
     return TRUE;
 }
 
 void vulkan_shutdown(renderer_backend* backend) {
+    vulkan_swapchain_destroy(&context, &context.swapchain);
+
     KDEBUG("Destroying Vulkan device");
     vulkan_device_destroy(&context);
 
@@ -171,4 +185,18 @@ vk_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
             break;
     }
     return VK_FALSE;
+}
+
+i32 find_memory_index(u32 type_filter, u32 property_flags) {
+    VkPhysicalDeviceMemoryProperties memory_properties;
+    vkGetPhysicalDeviceMemoryProperties(context.device.physical_device, &memory_properties);
+    // TODO: Probably can't, but double check this can't possible return an index that is too large for i32
+    for (u32 i = 0; i < memory_properties.memoryTypeCount; i++) {
+        if (type_filter & (1 << i) && (memory_properties.memoryTypes[i].propertyFlags & property_flags) == property_flags) {
+            return i;
+        }
+    }
+
+    KWARN("Unable to find suitable memory type");
+    return -1;
 }
