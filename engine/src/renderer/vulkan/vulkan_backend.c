@@ -118,6 +118,15 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
 }
 
 void vulkan_shutdown(renderer_backend* backend) {
+    KDEBUG("Destroying Vulkan device");
+    vulkan_device_destory(&context);
+
+    KDEBUG("Destroying Vulkan surface");
+    if (context.surface) {
+        vkDestroySurfaceKHR(context.instance, context.surface, context.allocator);
+        context.surface = NULL;
+    }
+
     KDEBUG("Destroying Vulkan debugger");
     if (context.debug_messenger) {
         PFN_vkDestroyDebugUtilsMessengerEXT func =
