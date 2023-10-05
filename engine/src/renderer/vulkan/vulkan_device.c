@@ -71,9 +71,11 @@ b8 vulkan_device_create(vulkan_context* context) {
         queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_create_infos[i].queueFamilyIndex = indices[i];
         queue_create_infos[i].queueCount = 1;
-        if (indices[i] == context->device.graphics_queue_index) {
-            queue_create_infos[i].queueCount = 2;
-        }
+
+        // TODO: Readd and fix when multithreading the renderer
+        // if (indices[i] == context->device.graphics_queue_index) {
+        //     queue_create_infos[i].queueCount = 2;
+        // }
         queue_create_infos[i].flags = 0;
         queue_create_infos[i].pNext = NULL;
         f32 queue_priority = 1.0f;
