@@ -10,6 +10,7 @@
 
 #include "core/logger.h"
 #include "core/input.h"
+#include "core/event.h"
 
 // TODO: Find a way to keep all this vulkan stuff out of the platform code
 #include <vulkan/vulkan.h>
@@ -218,8 +219,9 @@ b8 platform_startup(
                 // Notify the os that erasing will be handled by the application to prevent flickering
                 return 1;
             case WM_CLOSE:
-                // TODO: Fire an event for the application to quit
-                return 0;
+                event_context data = {};
+                event_fire(EVENT_CODE_APPLICATION_QUIT, 0, data);
+                return TRUE;
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
