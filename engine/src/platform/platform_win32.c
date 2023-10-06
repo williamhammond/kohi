@@ -221,7 +221,7 @@ b8 platform_startup(
             case WM_CLOSE:
                 event_context data = {};
                 event_fire(EVENT_CODE_APPLICATION_QUIT, 0, data);
-                return TRUE;
+                return 0;
             case WM_DESTROY:
                 PostQuitMessage(0);
                 return 0;
