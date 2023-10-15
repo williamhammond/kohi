@@ -31,14 +31,14 @@ void _darray_field_set(void* array, u64 field, u64 value) {
 }
 
 void* _darray_resize(void* array) {
-     u64 length = darray_length(array);
-     u64 element_size = darray_element_size(array);
-     void* temp = _darray_create(darray_capacity(array) * DARRAY_RESIZE_FACTOR, element_size);
-     kcopy_memory(temp, array, length * element_size);
+    u64 length = darray_length(array);
+    u64 element_size = darray_element_size(array);
+    void* temp = _darray_create(darray_capacity(array) * DARRAY_RESIZE_FACTOR, element_size);
+    kcopy_memory(temp, array, length * element_size);
 
-     _darray_field_set(temp, DARRAY_LENGTH, length);
-     _darray_destroy(array);
-     return temp;
+    _darray_field_set(temp, DARRAY_LENGTH, length);
+    _darray_destroy(array);
+    return temp;
 }
 
 void* _darray_push(void* array, const void* value_ptr) {
@@ -63,7 +63,6 @@ void _darray_pop(void* array, void* dest) {
     darray_field_set(array, DARRAY_LENGTH, length - 1);
 }
 
-
 void* _darray_pop_at(void* array, u64 index, void* dest) {
     u64 length = darray_length(array);
     if (index >= length) {
@@ -74,15 +73,13 @@ void* _darray_pop_at(void* array, u64 index, void* dest) {
     u64 element_size = darray_element_size(array);
     kcopy_memory(dest, (void*)(addr + (index * element_size)), element_size);
 
-
     // TODO: Maybe make this a swap and remove back?
     // If not on the last element, snip out the entry and copy the rest inward
     if (index != length - 1) {
         kcopy_memory(
             (void*)(addr + (index * element_size)),
             (void*)(addr + ((index + 1) * element_size)),
-            (length - index ) * element_size
-        );
+            (length - index) * element_size);
     }
 
     _darray_field_set(array, DARRAY_LENGTH, length - 1);
@@ -102,12 +99,11 @@ void* _darray_insert_at(void* array, u64 index, void* value_ptr) {
 
     u64 addr = (u64)array;
     u64 element_size = darray_element_size(array);
-    if(index != length) {
+    if (index != length) {
         kcopy_memory(
             (void*)(addr + ((index + 1) * element_size)),
             (void*)(addr + (index * element_size)),
-            (length - index) * element_size
-        );
+            (length - index) * element_size);
     }
     kcopy_memory((void*)(addr + (index * element_size)), value_ptr, element_size);
     _darray_field_set(array, DARRAY_LENGTH, length + 1);

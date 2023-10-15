@@ -1,7 +1,8 @@
 #include "core/event.h"
 
-#include "core/kmemory.h"
 #include "containers/darray.h"
+
+#include "core/kmemory.h"
 
 typedef struct registered_event {
     void* listener;
@@ -30,7 +31,7 @@ b8 event_initialize() {
     return TRUE;
 }
 
-void event_shutdown () {
+void event_shutdown() {
     // Free the events arrays. And objects pointed to should be freed on their own
     for (u16 i = 0; i < MAX_MESSAGE_CODES; i++) {
         if (state.registered[i].events != 0) {

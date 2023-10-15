@@ -5,10 +5,9 @@
 void vulkan_fence_create(
     vulkan_context* context,
     b8 create_signaled,
-    vulkan_fence* out_fence)
-{
+    vulkan_fence* out_fence) {
     out_fence->is_signaled = create_signaled;
-    VkFenceCreateInfo fence_create_info = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+    VkFenceCreateInfo fence_create_info = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     if (out_fence->is_signaled) {
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     }
@@ -38,7 +37,7 @@ b8 vulkan_fence_wait(vulkan_context* context, vulkan_fence* fence, u64 timeout_n
             &fence->handle,
             TRUE,
             timeout_ns);
-        switch(result) {
+        switch (result) {
             case VK_SUCCESS:
                 fence->is_signaled = TRUE;
                 return TRUE;

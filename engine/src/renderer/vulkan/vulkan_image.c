@@ -1,9 +1,9 @@
 #include "vulkan_image.h"
 
-#include "vulkan_device.h"
-
 #include "core/kmemory.h"
 #include "core/logger.h"
+
+#include "vulkan_device.h"
 
 void vulkan_image_create(
     vulkan_context* context,
@@ -16,12 +16,11 @@ void vulkan_image_create(
     VkMemoryPropertyFlags memory_flags,
     b32 create_view,
     VkImageAspectFlags view_aspect_flags,
-    vulkan_image* out_image
-) {
+    vulkan_image* out_image) {
     out_image->width = width;
     out_image->height = height;
 
-    VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+    VkImageCreateInfo image_create_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.extent.width = width;
     image_create_info.extent.height = height;
@@ -42,15 +41,15 @@ void vulkan_image_create(
     vkGetImageMemoryRequirements(context->device.logical_device, out_image->handle, &memory_requirements);
 
     i32 memory_type = context->find_memory_index(memory_requirements.memoryTypeBits, memory_flags);
-    if (memory_flags == -1 ) {
+    if (memory_flags == -1) {
         KERROR("Require memory type not found. Image not valid");
     }
 
-    VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO };
+    VkMemoryAllocateInfo memory_allocate_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO};
     memory_allocate_info.allocationSize = memory_requirements.size;
     memory_allocate_info.memoryTypeIndex = memory_type;
     memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    
+
     VK_CHECK(vkAllocateMemory(context->device.logical_device, &memory_allocate_info, context->allocator, &out_image->memory));
 
     // TODO: configurable memory offset
@@ -66,9 +65,8 @@ void vulkan_image_view_create(
     vulkan_context* context,
     VkFormat format,
     vulkan_image* image,
-    VkImageAspectFlags aspect_flags
-) {
-    VkImageViewCreateInfo view_create_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+    VkImageAspectFlags aspect_flags) {
+    VkImageViewCreateInfo view_create_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     view_create_info.image = image->handle;
     view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_create_info.format = format;
@@ -77,7 +75,7 @@ void vulkan_image_view_create(
     // TODO: Make configurable
     view_create_info.subresourceRange.baseMipLevel = 0;
     view_create_info.subresourceRange.levelCount = 1;
-    view_create_info.subresourceRange.baseArrayLayer = 0; 
+    view_create_info.subresourceRange.baseArrayLayer = 0;
     view_create_info.subresourceRange.layerCount = 1;
 
     VK_CHECK(vkCreateImageView(context->device.logical_device, &view_create_info, context->allocator, &image->view));
@@ -94,6 +92,6 @@ void vulkan_image_destroy(vulkan_context* context, vulkan_image* image) {
     }
     if (image->handle) {
         vkDestroyImage(context->device.logical_device, image->handle, context->allocator);
-        image->handle= NULL;
+        image->handle = NULL;
     }
 }

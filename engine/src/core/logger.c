@@ -1,16 +1,15 @@
 #include "logger.h"
-#include "platform/platform.h"
 
+#include "platform/platform.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 
 b8 initialize_logging() {
     return TRUE;
 }
 
 void shutdown_logging() {
-
 }
 
 void log_output(log_level level, const char* message, ...) {
@@ -20,8 +19,7 @@ void log_output(log_level level, const char* message, ...) {
         "[WARN]",
         "[INFO]",
         "[DEBUG]",
-        "[TRACE]"
-    };
+        "[TRACE]"};
 
     const i32 msg_length = 32000;
     char out_message[msg_length];

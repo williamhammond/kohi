@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "defines.h"
 
@@ -51,7 +51,6 @@ KAPI b8 event_register(u16 code, void* listener, PFN_on_event callback);
  * @returns TRUE if the event is successfully unregistered, FALSE otherwise
 */
 KAPI b8 event_unregister(u16 code, void* listener, PFN_on_event callback);
-
 
 /**
  * Fires an event to listeners of the given code. If an event handler returns

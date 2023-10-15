@@ -1,0 +1,17 @@
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 0
+NamespaceIndentation: All
+BreakBeforeBraces: Attach
+PointerAlignment: Left
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"containers/'
+    Priority:        1
+  - Regex:           '^"core/'
+    Priority:        2
+  - Regex:           '^"vulkan/'
+    Priority:        3
+  - Regex:           '.*'    # Catch-all for everything else
+    Priority:        4

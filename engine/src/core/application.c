@@ -1,14 +1,13 @@
 #include "application.h"
-#include "game_types.h"
 
 #include "core/clock.h"
+#include "core/event.h"
 #include "core/input.h"
 #include "core/kmemory.h"
 #include "core/logger.h"
-#include "core/event.h"
 
+#include "game_types.h"
 #include "platform/platform.h"
-
 #include "renderer/renderer_frontend.h"
 
 typedef struct application_state {
@@ -50,12 +49,11 @@ b8 applicaton_create(game* game_inst) {
         return FALSE;
     }
     if (!platform_startup(&app_state.platform,
-        game_inst->app_config.name,
-        game_inst->app_config.start_pos_x, 
-        game_inst->app_config.start_pos_y, 
-        game_inst->app_config.start_width, 
-        game_inst->app_config.start_height)) {
-
+                          game_inst->app_config.name,
+                          game_inst->app_config.start_pos_x,
+                          game_inst->app_config.start_pos_y,
+                          game_inst->app_config.start_width,
+                          game_inst->app_config.start_height)) {
         return FALSE;
     }
 
@@ -89,7 +87,7 @@ b8 applicaton_run() {
     f64 target_frame_seconds = 1.0f / 60.0f;
 
     while (app_state.is_running) {
-        if(!platform_pump_messages(&app_state.platform)) {
+        if (!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
         }
         if (!app_state.is_suspended) {
@@ -148,7 +146,7 @@ b8 applicaton_run() {
     input_shutdown();
 
     renderer_shutdown();
-    
+
     // TODO: maybe explicitly set is_running to FALSE here?
     // app_state.is_running = FALSE;
     platform_shutdown(&app_state.platform);
@@ -157,7 +155,7 @@ b8 applicaton_run() {
 }
 
 b8 application_on_event(u16 code, void* sender, void* listener_inst, event_context context) {
-    switch(code) {
+    switch (code) {
         case EVENT_CODE_APPLICATION_QUIT: {
             KINFO("EVENT_CODE_APPLICATION_QUIT received, shutting down");
             app_state.is_running = FALSE;
@@ -185,7 +183,7 @@ b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context
         } else {
             KDEBUG("'%c' key pressed in window", key_code);
         }
-    } else if (code == EVENT_CODE_KEY_RELEASED){
+    } else if (code == EVENT_CODE_KEY_RELEASED) {
         u16 key_code = context.data.u16[0];
 
         if (key_code == KEY_B) {

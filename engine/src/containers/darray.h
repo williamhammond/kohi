@@ -52,17 +52,16 @@ KAPI void* _darray_insert_at(void* array, u64 index, void* dest);
         array = _darray_push(array, &temp); \
     }
 
-#define darray_insert_at(array, index, value)       \
-    {                                               \
-        typeof(value) temp = value;                 \
-        array = _darray_push(array, index, &temp);  \
+#define darray_insert_at(array, index, value)      \
+    {                                              \
+        typeof(value) temp = value;                \
+        array = _darray_push(array, index, &temp); \
     }
 
-#define darray_pop_at(array, index, value)      \
-    {                                           \
-        _darray_pop_at(array, index, value);    \
+#define darray_pop_at(array, index, value)   \
+    {                                        \
+        _darray_pop_at(array, index, value); \
     }
-
 
 #define darray_field_set(array, field, value) _darray_field_set(array, field, value)
 

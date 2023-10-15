@@ -1,15 +1,15 @@
 #include "renderer_frontend.h"
 
-#include "renderer_backend.h"
-
-#include "core/logger.h"
 #include "core/kmemory.h"
+#include "core/logger.h"
+
+#include "renderer_backend.h"
 
 static renderer_backend* backend = NULL;
 
 b8 renderer_initialize(const char* application_name, struct platform_state* plat_state) {
     backend = kallocate(sizeof(renderer_backend), MEMORY_TAG_RENDERER);
-    
+
     // TODO: make this configurable
     renderer_backend_create(RENDERER_BACKEND_TYPE_VULKAN, plat_state, backend);
 

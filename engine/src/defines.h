@@ -26,7 +26,6 @@ typedef char b8;
 #define STATIC_ASSERT static_assert
 #endif
 
-
 STATIC_ASSERT(sizeof(u8) == 1, "u8 is not 1 byte");
 STATIC_ASSERT(sizeof(u16) == 2, "u16 is not 2 byte");
 STATIC_ASSERT(sizeof(u32) == 4, "u32 is not 4 byte");
@@ -55,7 +54,7 @@ STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 #define K_PLATFORM_ANDROID 1
 #endif
 
-#elif(__unix__)
+#elif (__unix__)
 #define K_PLATFORM_UNIX 1
 
 #elif (__POSIX_VERSION)
@@ -77,7 +76,6 @@ STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 
 #endif
 
-
 #ifdef KEXPORT
 
 #ifdef _MSC_VER
@@ -96,4 +94,5 @@ STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 
 #endif
 
-#define KCLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value;
+#define KCLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max \
+                                                                      : value;

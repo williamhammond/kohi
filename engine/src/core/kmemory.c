@@ -1,8 +1,8 @@
 #include "kmemory.h"
 
 #include "core/logger.h"
-#include "platform/platform.h"
 
+#include "platform/platform.h"
 #include <stdio.h>
 // TODO: Use string utilities
 #include <string.h>
@@ -38,10 +38,9 @@ void initialize_memory() {
 }
 
 void shutdown_memory() {
-
 }
 
-KAPI void* kallocate(u64  size, memory_tag tag) {
+KAPI void* kallocate(u64 size, memory_tag tag) {
     if (tag == MEMORY_TAG_UNKNOWN) {
         KWARN("kallocate called using MEMORY_TAG_UNKNOWN. Reclassify this allocation");
     }

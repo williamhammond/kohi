@@ -25,11 +25,10 @@ typedef enum memory_tag {
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
-
 KAPI void initialize_memory();
 KAPI void shutdown_memory();
 
-KAPI void* kallocate(u64  size, memory_tag tag);
+KAPI void* kallocate(u64 size, memory_tag tag);
 KAPI void kfree(void* block, u64 size, memory_tag tag);
 KAPI void* kzero_memory(void* block, u64 size);
 KAPI void* kcopy_memory(void* dest, const void* source, u64 size);

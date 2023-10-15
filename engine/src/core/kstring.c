@@ -1,7 +1,5 @@
-#include <core/kstring.h>
 #include <core/kmemory.h>
-
-
+#include <core/kstring.h>
 #include <string.h>
 
 u64 string_length(const char* str) {

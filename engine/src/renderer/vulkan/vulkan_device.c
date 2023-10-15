@@ -1,10 +1,10 @@
 #include "vulkan_device.h"
 
-#include "core/logger.h"
-#include "core/kstring.h"
-#include "core/kmemory.h"
-
 #include "containers/darray.h"
+
+#include "core/kmemory.h"
+#include "core/kstring.h"
+#include "core/logger.h"
 
 typedef struct vulkan_physical_device_requirements {
     b8 graphics;
@@ -86,7 +86,7 @@ b8 vulkan_device_create(vulkan_context* context) {
     VkPhysicalDeviceFeatures device_features = {};
     device_features.samplerAnisotropy = VK_TRUE;
 
-    VkDeviceCreateInfo device_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+    VkDeviceCreateInfo device_create_info = {VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     device_create_info.queueCreateInfoCount = index_count;
     device_create_info.pQueueCreateInfos = queue_create_infos;
     device_create_info.pEnabledFeatures = &device_features;
@@ -103,8 +103,7 @@ b8 vulkan_device_create(vulkan_context* context) {
         context->device.physical_device,
         &device_create_info,
         context->allocator,
-        &context->device.logical_device
-    ));
+        &context->device.logical_device));
     KINFO("Logical device created");
 
     vkGetDeviceQueue(
@@ -124,7 +123,7 @@ b8 vulkan_device_create(vulkan_context* context) {
         &context->device.present_queue);
     KINFO("Queue obtained");
 
-    VkCommandPoolCreateInfo pool_create_info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+    VkCommandPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
     pool_create_info.queueFamilyIndex = context->device.graphics_queue_index;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
@@ -133,7 +132,7 @@ b8 vulkan_device_create(vulkan_context* context) {
         &pool_create_info,
         context->allocator,
         &context->device.graphics_command_pool));
-    
+
     KINFO("Graphics command pool created");
 
     return TRUE;
@@ -149,7 +148,6 @@ void vulkan_device_destroy(vulkan_context* context) {
         context->device.logical_device,
         context->device.graphics_command_pool,
         context->allocator);
-
 
     KINFO("Destroying logical device");
     if (context->device.logical_device) {
@@ -174,14 +172,14 @@ void vulkan_device_destroy(vulkan_context* context) {
             context->device.swapchain_support.present_modes,
             sizeof(VkSurfaceFormatKHR) * context->device.swapchain_support.format_count,
             MEMORY_TAG_RENDERER);
-        context->device.swapchain_support.present_mode_count= 0;
+        context->device.swapchain_support.present_mode_count = 0;
         context->device.swapchain_support.present_modes = NULL;
     }
 
     kzero_memory(
         &context->device.properties,
         sizeof(context->device.swapchain_support.capabilities));
-    
+
     context->device.graphics_queue_index = -1;
     context->device.present_queue_index = -1;
     context->device.transfer_queue_index = -1;
@@ -190,19 +188,18 @@ void vulkan_device_destroy(vulkan_context* context) {
 void vulkan_device_query_swapchain_support(
     VkPhysicalDevice physical_device,
     VkSurfaceKHR surface,
-    vulkan_swapchain_support_info* out_support_info
-) {
+    vulkan_swapchain_support_info* out_support_info) {
     VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
         physical_device,
         surface,
         &out_support_info->capabilities));
-    
+
     VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(
         physical_device,
         surface,
         &out_support_info->format_count,
         0));
-    
+
     if (out_support_info->format_count != 0) {
         if (!out_support_info->formats) {
             out_support_info->formats = kallocate(sizeof(VkSurfaceFormatKHR) * out_support_info->format_count, MEMORY_TAG_RENDERER);
@@ -211,8 +208,7 @@ void vulkan_device_query_swapchain_support(
             physical_device,
             surface,
             &out_support_info->format_count,
-            out_support_info->formats
-        ));
+            out_support_info->formats));
     }
 
     VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(
@@ -220,7 +216,7 @@ void vulkan_device_query_swapchain_support(
         surface,
         &out_support_info->present_mode_count,
         0));
-    
+
     if (out_support_info->present_mode_count != 0) {
         if (!out_support_info->present_modes) {
             out_support_info->present_modes = kallocate(sizeof(VkPresentModeKHR) * out_support_info->present_mode_count, MEMORY_TAG_RENDERER);
@@ -300,7 +296,7 @@ b8 select_physical_device(vulkan_context* context) {
             &context->device.swapchain_support);
         if (result) {
             KINFO("Selected device: %s", properties.deviceName);
-            switch(properties.deviceType) {
+            switch (properties.deviceType) {
                 case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
                     KINFO("Device type: Discrete GPU");
                     break;
@@ -323,13 +319,13 @@ b8 select_physical_device(vulkan_context* context) {
                 VK_VERSION_MAJOR(properties.driverVersion),
                 VK_VERSION_MINOR(properties.driverVersion),
                 VK_VERSION_PATCH(properties.driverVersion));
-            
+
             KINFO(
                 "Vulkan API VERSION: %d.%d.%d",
                 VK_VERSION_MAJOR(properties.apiVersion),
                 VK_VERSION_MINOR(properties.apiVersion),
                 VK_VERSION_PATCH(properties.apiVersion));
-            
+
             for (u32 j = 0; j < memory.memoryHeapCount; j++) {
                 f32 memory_size_gib = memory.memoryHeaps[j].size / (1024.0f * 1024.0f * 1024.0f);
                 if (memory.memoryHeaps[j].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
@@ -368,8 +364,7 @@ b8 physical_device_meets_requirements(
     const VkPhysicalDeviceFeatures* features,
     const vulkan_physical_device_requirements* requirements,
     vulkan_physical_device_queue_family_info* out_queue_info,
-    vulkan_swapchain_support_info* out_swapchain_support
-) {
+    vulkan_swapchain_support_info* out_swapchain_support) {
     out_queue_info->graphics_family_index = -1;
     out_queue_info->present_family_index = -1;
     out_queue_info->compute_family_index = -1;
@@ -397,13 +392,13 @@ b8 physical_device_meets_requirements(
         }
 
         if (queue_familes[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
-            out_queue_info->compute_family_index= i;
+            out_queue_info->compute_family_index = i;
             current_transfer_score++;
         }
 
-        if(queue_familes[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
+        if (queue_familes[i].queueFlags & VK_QUEUE_TRANSFER_BIT) {
             if (current_transfer_score <= min_transfer_score) {
-                min_transfer_score = current_transfer_score;            
+                min_transfer_score = current_transfer_score;
                 out_queue_info->transfer_family_index = i;
             }
         }
@@ -416,19 +411,17 @@ b8 physical_device_meets_requirements(
     }
     // Print out some info about the device
     KINFO("%8s | %7s | %7s | %8s | %s",
-        out_queue_info->graphics_family_index != -1 ? "Yes" : "No",
-        out_queue_info->present_family_index != -1 ? "Yes" : "No",
-        out_queue_info->compute_family_index != -1 ? "Yes" : "No",
-        out_queue_info->transfer_family_index != -1 ? "Yes" : "No",
-        properties->deviceName);
-    
+          out_queue_info->graphics_family_index != -1 ? "Yes" : "No",
+          out_queue_info->present_family_index != -1 ? "Yes" : "No",
+          out_queue_info->compute_family_index != -1 ? "Yes" : "No",
+          out_queue_info->transfer_family_index != -1 ? "Yes" : "No",
+          properties->deviceName);
 
     if (
         (!requirements->graphics || out_queue_info->graphics_family_index != -1) &&
         (!requirements->present || out_queue_info->present_family_index != -1) &&
         (!requirements->compute || out_queue_info->compute_family_index != -1) &&
-        (!requirements->transfer || out_queue_info->transfer_family_index != -1)
-    ) {
+        (!requirements->transfer || out_queue_info->transfer_family_index != -1)) {
         KINFO("Device meets requirements");
         KTRACE("Graphics family index: %i", out_queue_info->graphics_family_index);
         KTRACE("Present family index: %i", out_queue_info->present_family_index);
@@ -437,7 +430,7 @@ b8 physical_device_meets_requirements(
     }
 
     vulkan_device_query_swapchain_support(device, surface, out_swapchain_support);
-    if (out_swapchain_support->format_count < 1 || out_swapchain_support -> present_mode_count < 1) {
+    if (out_swapchain_support->format_count < 1 || out_swapchain_support->present_mode_count < 1) {
         if (out_swapchain_support->formats) {
             kfree(out_swapchain_support->formats, sizeof(VkSurfaceFormatKHR) * out_swapchain_support->format_count, MEMORY_TAG_RENDERER);
         }
@@ -463,7 +456,7 @@ b8 physical_device_meets_requirements(
                 NULL,
                 &available_extension_count,
                 available_extensions));
-            u32 required_extension_count = darray_length(requirements->device_extension_names); 
+            u32 required_extension_count = darray_length(requirements->device_extension_names);
             for (u32 i = 0; i < required_extension_count; i++) {
                 b8 found = FALSE;
                 for (u32 j = 0; j < available_extension_count; j++) {

@@ -6,11 +6,10 @@ void vulkan_command_buffer_allocate(
     vulkan_context* context,
     VkCommandPool pool,
     b8 is_primary,
-    vulkan_command_buffer* out_command_buffer
-) {
+    vulkan_command_buffer* out_command_buffer) {
     kzero_memory(out_command_buffer, sizeof(vulkan_command_buffer));
 
-    VkCommandBufferAllocateInfo allocate_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+    VkCommandBufferAllocateInfo allocate_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     allocate_info.commandPool = pool;
     allocate_info.level = is_primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
     allocate_info.commandBufferCount = 1;
@@ -27,8 +26,7 @@ void vulkan_command_buffer_allocate(
 void vulkan_command_buffer_free(
     vulkan_context* context,
     VkCommandPool pool,
-    vulkan_command_buffer* command_buffer
-){
+    vulkan_command_buffer* command_buffer) {
     vkFreeCommandBuffers(
         context->device.logical_device,
         pool,
@@ -42,9 +40,8 @@ void vulkan_command_buffer_begin(
     vulkan_command_buffer* command_buffer,
     b8 is_single_use,
     b8 is_renderpass_continue,
-    b8 is_simultaneous_use
-) {
-    VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    b8 is_simultaneous_use) {
+    VkCommandBufferBeginInfo begin_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     begin_info.flags = 0;
     if (is_single_use) {
         begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -78,8 +75,7 @@ void vulkan_command_buffer_reset(vulkan_command_buffer* command_buffer) {
 void vulkan_command_buffer_allocate_and_begin_single_use(
     vulkan_context* context,
     VkCommandPool pool,
-    vulkan_command_buffer* out_command_buffer
-) {
+    vulkan_command_buffer* out_command_buffer) {
     vulkan_command_buffer_allocate(context, pool, TRUE, out_command_buffer);
     vulkan_command_buffer_begin(out_command_buffer, TRUE, FALSE, FALSE);
 }
@@ -88,11 +84,10 @@ void vulkan_command_buffer_end_single_use(
     vulkan_context* context,
     VkCommandPool pool,
     vulkan_command_buffer* command_buffer,
-    VkQueue queue
-) {
+    VkQueue queue) {
     vulkan_command_buffer_end(command_buffer);
 
-    VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &command_buffer->handle;
     VK_CHECK(vkQueueSubmit(queue, 1, &submit_info, 0));

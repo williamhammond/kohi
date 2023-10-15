@@ -8,8 +8,7 @@ void vulkan_renderpass_create(
     f32 x, f32 y, f32 w, f32 h,
     f32 r, f32 g, f32 b, f32 a,
     f32 depth,
-    u32 stencil
-) {
+    u32 stencil) {
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -18,11 +17,11 @@ void vulkan_renderpass_create(
     VkAttachmentDescription attachment_descriptions[attachment_description_count];
 
     VkAttachmentDescription color_attachment;
-    color_attachment.format = context->swapchain.image_format.format; // TODO: configurable
+    color_attachment.format = context->swapchain.image_format.format;  // TODO: configurable
     color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
     color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    color_attachment.stencilLoadOp =  VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -42,7 +41,7 @@ void vulkan_renderpass_create(
     depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; 
+    depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -76,7 +75,7 @@ void vulkan_renderpass_create(
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     dependency.dependencyFlags = 0;
 
-    VkRenderPassCreateInfo render_pass_create_info = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
+    VkRenderPassCreateInfo render_pass_create_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
     render_pass_create_info.attachmentCount = attachment_description_count;
     render_pass_create_info.pAttachments = attachment_descriptions;
     render_pass_create_info.subpassCount = 1;
@@ -90,8 +89,7 @@ void vulkan_renderpass_create(
         context->device.logical_device,
         &render_pass_create_info,
         context->allocator,
-        &out_renderpass->handle
-    ));
+        &out_renderpass->handle));
 }
 
 void vulkan_renderpass_destroy(vulkan_context* context, vulkan_renderpass* renderpass) {
@@ -103,9 +101,8 @@ void vulkan_renderpass_destroy(vulkan_context* context, vulkan_renderpass* rende
 void vulkan_renderpass_begin(
     vulkan_command_buffer* command_buffer,
     vulkan_renderpass* renderpass,
-    VkFramebuffer frame_buffer
-) {
-    VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
+    VkFramebuffer frame_buffer) {
+    VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
     begin_info.renderPass = renderpass->handle;
     begin_info.framebuffer = frame_buffer;
     begin_info.renderArea.offset.x = renderpass->x;

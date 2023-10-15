@@ -105,7 +105,6 @@ typedef enum keys {
     KEY_DECIMAL = 0x6E,
     KEY_DIVIDE = 0x6F,
 
-
     KEY_F1 = 0x70,
     KEY_F2 = 0x71,
     KEY_F3 = 0x72,
@@ -131,13 +130,11 @@ typedef enum keys {
     KEY_F23 = 0x86,
     KEY_F24 = 0x87,
 
-
     KEY_NUMLOCK = 0x90,
 
     KEY_SCROLL = 0x91,
 
     KEY_NUMPAD_EQUAL = 0x92,
-
 
     KEY_LSHIFT = 0xA0,
     KEY_RSHIFT = 0xA1,
@@ -145,7 +142,6 @@ typedef enum keys {
     KEY_RCONTROL = 0xA3,
     KEY_LALT = 0xA4,
     KEY_RALT = 0xA5,
-
 
     KEY_SEMICOLON = 0x3B,
 
@@ -182,8 +178,8 @@ KAPI b8 input_is_button_down(buttons button);
 KAPI b8 input_is_button_up(buttons button);
 KAPI b8 input_was_button_down(buttons button);
 KAPI b8 input_was_button_up(buttons button);
-KAPI void input_get_mouse_position (i32* x, i32* y);
-KAPI void input_get_previous_mouse_position (i32* x, i32* y);
+KAPI void input_get_mouse_position(i32* x, i32* y);
+KAPI void input_get_previous_mouse_position(i32* x, i32* y);
 
 void input_process_mouse_button(buttons button, b8 pressed);
 void input_process_mouse_move(i16 x, i16 y);

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "core/application.h"
-#include "core/logger.h"
 #include "core/kmemory.h"
+#include "core/logger.h"
+
 #include "game_types.h"
 
 extern b8 create_game(game* out_game);
