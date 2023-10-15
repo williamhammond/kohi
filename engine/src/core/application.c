@@ -167,6 +167,11 @@ b8 application_on_event(u16 code, void* sender, void* listener_inst, event_conte
     return FALSE;
 }
 
+void application_get_framebuffer_size(u32* width, u32* height) {
+    *width = app_state.width;
+    *height = app_state.height;
+}
+
 b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context context) {
     if (code == EVENT_CODE_KEY_PRESSED) {
         u16 key_code = context.data.u16[0];
