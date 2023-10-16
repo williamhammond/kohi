@@ -156,9 +156,8 @@ void create(vulkan_context* context, u32 width, u32 height, vulkan_swapchain* sw
     swapchain_create_info.clipped = VK_TRUE;
     swapchain_create_info.oldSwapchain = NULL;
 
-    // TODO: make configurable
-    swapchain_create_info.imageExtent.height = 720;
-    swapchain_create_info.imageExtent.width = 1280;
+    swapchain_create_info.imageExtent.height = height;
+    swapchain_create_info.imageExtent.width = width;
     VK_CHECK(vkCreateSwapchainKHR(context->device.logical_device, &swapchain_create_info, context->allocator, &swapchain->handle));
 
     context->current_frame = 0;
@@ -209,6 +208,7 @@ void create(vulkan_context* context, u32 width, u32 height, vulkan_swapchain* sw
 }
 
 void destroy(vulkan_context* context, vulkan_swapchain* swapchain) {
+    vkDeviceWaitIdle(context->device.logical_device);
     vulkan_image_destroy(context, &swapchain->depth_attachment);
 
     for (u32 i = 0; i < swapchain->image_count; i++) {
