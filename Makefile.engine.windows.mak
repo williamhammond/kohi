@@ -1,3 +1,7 @@
+ifndef VULKAN_SDK
+$(error VULKAN_SDK environment variable is not set. Please set it to the Vulkan SDK path.)
+endif
+
 DIR := $(subst /,\,${CURDIR})
 BUILD_DIR := bin
 OBJ_DIR := obj
