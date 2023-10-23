@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "Build Engine",
-            "windows" : {
+            "windows": {
                 "command": "${workspaceFolder}/engine/build.bat"
             },
             "linux": {
@@ -21,7 +21,7 @@
         {
             "type": "shell",
             "label": "Build Testbed",
-            "windows" : {
+            "windows": {
                 "command": "${workspaceFolder}/testbed/build.bat"
             },
             "linux": {
@@ -38,7 +38,7 @@
         {
             "type": "shell",
             "label": "Build Everything",
-            "windows" : {
+            "windows": {
                 "command": "${workspaceFolder}/build-all.bat"
             },
             "linux": {
@@ -69,7 +69,20 @@
             },
             "group": "build"
         },
+        {
+            "type": "shell",
+            "label": "Post-Build",
+            "windows": {
+                "command": "${workspaceFolder}\\post-build.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/post-build.sh",
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
     ],
-
     "version": "2.0.0"
 }
