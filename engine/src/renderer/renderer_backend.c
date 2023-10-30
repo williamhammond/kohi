@@ -12,9 +12,9 @@ b8 renderer_backend_create(renderer_backend_type type, struct platform_state* pl
         out_renderer_backend->end_frame = vulkan_end_frame;
         out_renderer_backend->resized = vulkan_resized;
 
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 void renderer_backend_destroy(renderer_backend* backend) {

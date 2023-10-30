@@ -56,7 +56,7 @@ b8 platform_startup(
     if (!RegisterClassA(&window_class)) {
         MessageBoxA(NULL, "Failed to register window class", "Error", MB_OK | MB_ICONEXCLAMATION);
         KFATAL("Failed to register window class");
-        return FALSE;
+        return false;
     }
 
     u32 client_x = x;
@@ -77,7 +77,7 @@ b8 platform_startup(
     window_style |= WS_THICKFRAME;
 
     RECT border_rect = {0, 0, 0, 0};
-    AdjustWindowRectEx(&border_rect, window_style, FALSE, window_ex_style);
+    AdjustWindowRectEx(&border_rect, window_style, false, window_ex_style);
 
     // In this case, the border rectangle is negative
     window_x += border_rect.left;
@@ -104,7 +104,7 @@ b8 platform_startup(
     if (!handle) {
         MessageBoxA(NULL, "Window creation failed!", "Error", MB_OK | MB_ICONEXCLAMATION);
         KFATAL("Window creation failed!");
-        return FALSE;
+        return false;
     }
     state->window = handle;
 
@@ -117,7 +117,7 @@ b8 platform_startup(
     clock_frequency = 1.0 / (f64)frequency.QuadPart;
     QueryPerformanceCounter(&start_time);
 
-    return TRUE;
+    return true;
 }
 
 void platform_shutdown(platform_state* plat_state) {
@@ -134,7 +134,7 @@ b8 platform_pump_messages(platform_state* plat_state) {
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
-    return TRUE;
+    return true;
 }
 
 // TODO: replace all of these with custom allocators
@@ -207,10 +207,10 @@ b8 platform_create_vulkan_surface(platform_state* plat_state, vulkan_context* co
     VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &state->surface);
     if (result != VK_SUCCESS) {
         KFATAL("Vulkan surface creation failed.");
-        return FALSE;
+        return false;
     }
     context->surface = state->surface;
-    return TRUE;
+    return true;
 }
 
 LRESULT CALLBACK win32_process_message(HWND window, UINT message, WPARAM w_param, LPARAM l_param) {

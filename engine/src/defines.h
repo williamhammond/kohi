@@ -39,8 +39,8 @@ STATIC_ASSERT(sizeof(i64) == 8, "i64 is not 8 byte");
 STATIC_ASSERT(sizeof(f32) == 4, "f32 is not 4 byte");
 STATIC_ASSERT(sizeof(f64) == 8, "f64 is not 8 byte");
 
-#define TRUE 1
-#define FALSE 0
+#define true 1
+#define false 0
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define K_PLATFORM_WINDOWS 1

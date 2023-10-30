@@ -23,19 +23,19 @@ typedef struct input_state {
     mouse_state mouse_previous;
 } input_state;
 
-static b8 initialized = FALSE;
+static b8 initialized = false;
 static input_state state = {};
 
 // TODO: Add better error handling for initialization
 void initialize_input() {
     kzero_memory(&state, sizeof(input_state));
-    initialized = TRUE;
+    initialized = true;
     KINFO("input subsystem initialized");
 }
 
 void input_shutdown() {
     // TODO: Add shutdown routines when needed
-    initialized = FALSE;
+    initialized = false;
 }
 
 void input_update(f64 delta_time) {
@@ -48,7 +48,7 @@ void input_update(f64 delta_time) {
 
 b8 input_is_key_up(keys key) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return !state.keyboard_current.keys[key];
@@ -56,7 +56,7 @@ b8 input_is_key_up(keys key) {
 
 b8 input_is_key_down(keys key) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return state.keyboard_current.keys[key];
@@ -64,7 +64,7 @@ b8 input_is_key_down(keys key) {
 
 KAPI b8 input_was_key_up(keys key) {
     if (!initialized) {
-        return TRUE;
+        return true;
     }
 
     return !state.keyboard_previous.keys[key];
@@ -72,7 +72,7 @@ KAPI b8 input_was_key_up(keys key) {
 
 b8 input_was_key_down(keys key) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return state.keyboard_previous.keys[key];
@@ -90,7 +90,7 @@ void input_process_key(keys key, b8 pressed) {
 
 b8 input_is_button_down(buttons button) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return state.keyboard_current.keys[button];
@@ -98,7 +98,7 @@ b8 input_is_button_down(buttons button) {
 
 b8 input_is_button_up(buttons button) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return !state.keyboard_current.keys[button];
@@ -106,7 +106,7 @@ b8 input_is_button_up(buttons button) {
 
 b8 input_was_button_down(buttons button) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return state.keyboard_previous.keys[button];
@@ -114,7 +114,7 @@ b8 input_was_button_down(buttons button) {
 
 b8 input_was_button_up(buttons button) {
     if (!initialized) {
-        return FALSE;
+        return false;
     }
 
     return !state.keyboard_previous.keys[button];

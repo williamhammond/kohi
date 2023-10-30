@@ -6,7 +6,7 @@
 #include <string.h>
 
 b8 initialize_logging() {
-    return TRUE;
+    return true;
 }
 
 void shutdown_logging() {
