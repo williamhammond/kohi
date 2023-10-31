@@ -241,6 +241,28 @@ LRESULT CALLBACK win32_process_message(HWND window, UINT message, WPARAM w_param
         case WM_SYSKEYUP: {
             b8 pressed = (message == WM_KEYDOWN) || (message == WM_SYSKEYDOWN);
             keys key = (u16)w_param;
+
+            // learn.microsoft.com/en-us/windows/win32/learnwin32/keyboard-input#keyboard-state
+            if (w_param == VK_MENU) {
+                if (GetKeyState(VK_RMENU) & 0x8000) {
+                    key = KEY_RALT;
+                } else if (GetKeyState(VK_LMENU) & 0x8000) {
+                    key = KEY_LALT;
+                }
+            } else if (w_param == VK_SHIFT) {
+                if (GetKeyState(VK_RSHIFT) & 0x8000) {
+                    key = KEY_RSHIFT;
+                } else if (GetKeyState(VK_LSHIFT) & 0x8000) {
+                    key = KEY_LSHIFT;
+                }
+            } else if (w_param == VK_CONTROL) {
+                if (GetKeyState(VK_RCONTROL) & 0x8000) {
+                    key = KEY_RCONTROL;
+                } else if (GetKeyState(VK_LCONTROL) & 0x8000) {
+                    key = KEY_LCONTROL;
+                }
+            }
+
             input_process_key(key, pressed);
         } break;
         case WM_MOUSEMOVE: {
