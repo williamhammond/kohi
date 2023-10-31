@@ -2,6 +2,9 @@
 
 #include "vulkan_types.inl"
 
+#define MAX_QUEUE_COUNT 32
+#define MAX_PHYSICAL_DEVICE_COUNT 32
+
 b8 vulkan_device_create(vulkan_context* context);
 
 void vulkan_device_destroy(vulkan_context* context);

@@ -83,7 +83,8 @@ KAPI char* get_memory_usage_str() {
     const u64 mib = 1024 * 1024;
     const u64 gib = 1024 * 1024 * 1024;
 
-    const u64 buffer_size = 8000;
+#define buffer_size 8000
+    // static const u64 buffer_size = 8000;
     char buffer[buffer_size] = "System memory use (tagged): \n";
     u64 offset = strlen(buffer);
     for (u32 i = 0; i < MEMORY_TAG_MAX_TAGS; i++) {

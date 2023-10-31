@@ -21,8 +21,7 @@ void log_output(log_level level, const char* message, ...) {
         "[DEBUG]",
         "[TRACE]"};
 
-    const i32 msg_length = 32000;
-    char out_message[msg_length];
+    char out_message[32000];
     memset(out_message, 0, sizeof(out_message));
 
     // Format original message.
@@ -34,7 +33,7 @@ void log_output(log_level level, const char* message, ...) {
     vsnprintf(out_message, sizeof(out_message), message, arg_ptr);
     va_end(arg_ptr);
 
-    char formatted_buffer[msg_length];
+    char formatted_buffer[32000];
     sprintf(formatted_buffer, "%s %s\n", level_strings[level], out_message);
 
     b8 is_error = level <= LOG_LEVEL_ERROR;

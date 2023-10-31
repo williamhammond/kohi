@@ -2,6 +2,9 @@
 
 #include "vulkan_types.inl"
 
+// TODO: Make configurable
+#define MAX_ATTACHMENT_COUNT 2
+
 void vulkan_renderpass_create(
     vulkan_context* context,
     vulkan_renderpass* out_renderpass,
