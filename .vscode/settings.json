@@ -1,5 +1,8 @@
 {
     "files.associations": {
         "vulkan_types.inl": "c"
+    },
+    "vim.handleKeys": {
+        "<C-p>": false
     }
 }
