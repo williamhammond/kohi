@@ -31,7 +31,7 @@ b8 application_on_event(u16 code, void* sender, void* listener_inst, event_conte
 b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context);
 b8 application_on_resized(u16 code, void* sender, void* listener_inst, event_context context);
 
-b8 applicaton_create(game* game_inst) {
+b8 application_create(game* game_inst) {
     if (initialized) {
         KERROR("application_create called more than once");
         return false;

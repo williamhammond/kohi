@@ -10,7 +10,7 @@ extern b8 create_game(game* out_game);
 
 /**
  * The entry point for the application.
-*/
+ */
 int main(void) {
     initialize_memory();
 
@@ -24,7 +24,7 @@ int main(void) {
         KFATAL("game instance has unddefined core function pointers");
         return -2;
     }
-    b8 created = applicaton_create(&game_inst);
+    b8 created = application_create(&game_inst);
     if (!created) {
         KFATAL("Failed to create application");
         return 1;
