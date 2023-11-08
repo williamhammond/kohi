@@ -15,6 +15,7 @@ struct memory_stats {
 static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "UNKNOWN         ",
     "ARRAY           ",
+    "LINEAR_ALLOCATOR",
     "DARRAY          ",
     "DICT            ",
     "RING_QUEUE      ",
