@@ -5,11 +5,24 @@
 #include <stdio.h>
 #include <string.h>
 
-b8 initialize_logging() {
+typedef struct logger_system_state {
+    b8 initialized;
+} logger_system_state;
+
+static logger_system_state* state_ptr;
+
+b8 initialize_logging(u64* memory_requirement, void* state) {
+    *memory_requirement = sizeof(logger_system_state);
+    if (state == NULL) {
+        return true;
+    }
+    state_ptr = state;
+    state_ptr->initialized = true;
     return true;
 }
 
-void shutdown_logging() {
+void shutdown_logging(void* state) {
+    state_ptr = NULL;
 }
 
 void log_output(log_level level, const char* message, ...) {

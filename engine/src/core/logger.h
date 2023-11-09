@@ -22,8 +22,13 @@ typedef enum log_level {
     LOG_LEVEL_TRACE = 5,
 } log_level;
 
-b8 initialize_logging();
-void shutdown_logging();
+/**
+ *
+ * @brief Use the vulkan pattern of double calling initialize functions. First to get the size requirement,
+ * and then again to actually initialize
+ */
+b8 initialize_logging(u64* memory_requirement, void* state);
+void shutdown_logging(void* state);
 
 KAPI void log_output(log_level level, const char* message, ...);
 

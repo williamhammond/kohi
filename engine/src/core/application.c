@@ -7,6 +7,7 @@
 #include "core/logger.h"
 
 #include "game_types.h"
+#include "memory/linear_allocator.h"
 #include "platform/platform.h"
 #include "renderer/renderer_frontend.h"
 
@@ -19,37 +20,50 @@ typedef struct application_state {
     i16 height;
     clock clock;
     f64 last_time;
+    linear_allocator systems_allocator;
+
+    u64 logging_system_memory_requirement;
+    void* logging_system_state;
 } application_state;
 
 // TODO: Configure this
 static b8 limit_frames = false;
 
-static b8 initialized = false;
-static application_state app_state;
+static application_state* app_state;
 
 b8 application_on_event(u16 code, void* sender, void* listener_inst, event_context);
 b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context);
 b8 application_on_resized(u16 code, void* sender, void* listener_inst, event_context context);
 
 b8 application_create(game* game_inst) {
-    if (initialized) {
+    if (game_inst->application_state) {
         KERROR("application_create called more than once");
         return false;
     }
 
-    app_state.game_inst = game_inst;
+    game_inst->application_state = kallocate(sizeof(application_state), MEMORY_TAG_APPLICATION);
+    app_state = game_inst->application_state;
+    app_state->game_inst = game_inst;
+    app_state->is_running = false;
+    app_state->is_suspended = false;
 
-    initialize_logging();
+    u64 systems_allocator_total_size = 64 * 1024 * 1024;  // 64 mb
+    linear_allocator_create(systems_allocator_total_size, NULL, &app_state->systems_allocator);
+
+    initialize_logging(&app_state->logging_system_memory_requirement, 0);
+    app_state->logging_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->logging_system_memory_requirement);
+    if (!initialize_logging(&app_state->logging_system_memory_requirement, app_state->logging_system_state)) {
+        KERROR("Failed to initialize logging system. Shutting down");
+        return false;
+    }
+
     initialize_input();
-
-    app_state.is_running = true;
-    app_state.is_suspended = false;
 
     if (!event_initialize()) {
         KFATAL("Failed to initialize event system");
         return false;
     }
-    if (!platform_startup(&app_state.platform,
+    if (!platform_startup(&app_state->platform,
                           game_inst->app_config.name,
                           game_inst->app_config.start_pos_x,
                           game_inst->app_config.start_pos_y,
@@ -58,12 +72,12 @@ b8 application_create(game* game_inst) {
         return false;
     }
 
-    if (!renderer_initialize(game_inst->app_config.name, &app_state.platform)) {
+    if (!renderer_initialize(game_inst->app_config.name, &app_state->platform)) {
         KFATAL("Failed to initialize renderer. Shutting down...");
         return false;
     }
 
-    if (!app_state.game_inst->initialize(game_inst)) {
+    if (!app_state->game_inst->initialize(game_inst)) {
         KFATAL("Failed to initialize game");
         return false;
     }
@@ -73,40 +87,39 @@ b8 application_create(game* game_inst) {
     event_register(EVENT_CODE_KEY_RELEASED, NULL, application_on_key);
     event_register(EVENT_CODE_RESIZE, NULL, application_on_resized);
 
-    app_state.game_inst->on_resize(app_state.game_inst, app_state.width, app_state.height);
-
-    initialized = true;
+    app_state->game_inst->on_resize(app_state->game_inst, app_state->width, app_state->height);
 
     return true;
 }
 
 b8 applicaton_run() {
-    clock_start(&app_state.clock);
-    clock_update(&app_state.clock);
-    app_state.last_time = app_state.clock.elapsed;
+    app_state->is_running = true;
+    clock_start(&app_state->clock);
+    clock_update(&app_state->clock);
+    app_state->last_time = app_state->clock.elapsed;
     f64 running_time = 0.0f;
     u8 frame_count = 0;
     f64 target_frame_seconds = 1.0f / 60.0f;
 
-    while (app_state.is_running) {
-        if (!platform_pump_messages(&app_state.platform)) {
-            app_state.is_running = false;
+    while (app_state->is_running) {
+        if (!platform_pump_messages(&app_state->platform)) {
+            app_state->is_running = false;
         }
-        if (!app_state.is_suspended) {
-            clock_update(&app_state.clock);
-            f64 current_time = app_state.clock.elapsed;
-            f64 delta_time = current_time - app_state.last_time;
+        if (!app_state->is_suspended) {
+            clock_update(&app_state->clock);
+            f64 current_time = app_state->clock.elapsed;
+            f64 delta_time = current_time - app_state->last_time;
             f64 frame_start_time = platform_get_absolute_time();
 
-            if (!app_state.game_inst->update(app_state.game_inst, delta_time)) {
+            if (!app_state->game_inst->update(app_state->game_inst, delta_time)) {
                 KFATAL("Game update failed. shutting down");
-                app_state.is_running = false;
+                app_state->is_running = false;
                 break;
             }
 
-            if (!app_state.game_inst->render(app_state.game_inst, delta_time)) {
+            if (!app_state->game_inst->render(app_state->game_inst, delta_time)) {
                 KFATAL("Game render failed. shutting down");
-                app_state.is_running = false;
+                app_state->is_running = false;
                 break;
             }
 
@@ -136,7 +149,7 @@ b8 applicaton_run() {
             input_update(delta_time);
 
             // TODO: See if current time should be gotten here
-            app_state.last_time = current_time;
+            app_state->last_time = current_time;
         }
     }
 
@@ -150,8 +163,8 @@ b8 applicaton_run() {
     renderer_shutdown();
 
     // TODO: maybe explicitly set is_running to FALSE here?
-    // app_state.is_running = FALSE;
-    platform_shutdown(&app_state.platform);
+    // app_state->is_running = FALSE;
+    platform_shutdown(&app_state->platform);
 
     return true;
 }
@@ -160,7 +173,7 @@ b8 application_on_event(u16 code, void* sender, void* listener_inst, event_conte
     switch (code) {
         case EVENT_CODE_APPLICATION_QUIT: {
             KINFO("EVENT_CODE_APPLICATION_QUIT received, shutting down");
-            app_state.is_running = false;
+            app_state->is_running = false;
             return true;
         }
     }
@@ -168,8 +181,8 @@ b8 application_on_event(u16 code, void* sender, void* listener_inst, event_conte
 }
 
 void application_get_framebuffer_size(u32* width, u32* height) {
-    *width = app_state.width;
-    *height = app_state.height;
+    *width = app_state->width;
+    *height = app_state->height;
 }
 
 b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context context) {
@@ -202,22 +215,22 @@ b8 application_on_resized(u16 code, void* sender, void* listener_inst, event_con
         u16 width = context.data.u16[0];
         u16 height = context.data.u16[1];
 
-        if (width != app_state.width || height != app_state.height) {
-            app_state.width = width;
-            app_state.height = height;
+        if (width != app_state->width || height != app_state->height) {
+            app_state->width = width;
+            app_state->height = height;
 
             KDEBUG("Window resize: %i, %i", width, height);
 
             if (width == 0 || height == 0) {
                 KINFO("Window minimized, suspending application");
-                app_state.is_suspended = true;
+                app_state->is_suspended = true;
                 return true;
             } else {
-                if (app_state.is_suspended) {
+                if (app_state->is_suspended) {
                     KINFO("Window restored, resuming application");
-                    app_state.is_suspended = false;
+                    app_state->is_suspended = false;
                 }
-                app_state.game_inst->on_resize(app_state.game_inst, width, height);
+                app_state->game_inst->on_resize(app_state->game_inst, width, height);
                 renderer_on_resized(width, height);
             }
         }
