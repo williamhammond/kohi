@@ -26,8 +26,8 @@ typedef enum memory_tag {
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
-KAPI void initialize_memory();
-KAPI void shutdown_memory();
+KAPI void initialize_memory(u64* memory_requirement, void* state);
+KAPI void shutdown_memory(void* state);
 
 KAPI void* kallocate(u64 size, memory_tag tag);
 KAPI void kfree(void* block, u64 size, memory_tag tag);
@@ -37,3 +37,5 @@ KAPI void* kset_memory(void* dest, i32 value, u64 size);
 
 // Useful for debugging
 KAPI char* get_memory_usage_str();
+
+KAPI u64 get_memory_alloc_count();

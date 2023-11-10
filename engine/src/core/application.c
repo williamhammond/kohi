@@ -22,6 +22,9 @@ typedef struct application_state {
     f64 last_time;
     linear_allocator systems_allocator;
 
+    u64 memory_system_memory_requirement;
+    void* memory_system_state;
+
     u64 logging_system_memory_requirement;
     void* logging_system_state;
 } application_state;
@@ -50,7 +53,11 @@ b8 application_create(game* game_inst) {
     u64 systems_allocator_total_size = 64 * 1024 * 1024;  // 64 mb
     linear_allocator_create(systems_allocator_total_size, NULL, &app_state->systems_allocator);
 
-    initialize_logging(&app_state->logging_system_memory_requirement, 0);
+    initialize_memory(&app_state->memory_system_memory_requirement, NULL);
+    app_state->memory_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->memory_system_memory_requirement);
+    initialize_memory(&app_state->memory_system_memory_requirement, app_state->memory_system_state);
+
+    initialize_logging(&app_state->logging_system_memory_requirement, NULL);
     app_state->logging_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->logging_system_memory_requirement);
     if (!initialize_logging(&app_state->logging_system_memory_requirement, app_state->logging_system_state)) {
         KERROR("Failed to initialize logging system. Shutting down");
@@ -165,6 +172,8 @@ b8 applicaton_run() {
     // TODO: maybe explicitly set is_running to FALSE here?
     // app_state->is_running = FALSE;
     platform_shutdown(&app_state->platform);
+
+    shutdown_memory(app_state->memory_system_state);
 
     return true;
 }

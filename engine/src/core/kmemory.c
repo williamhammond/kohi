@@ -32,13 +32,25 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
     "ENTITY_NODE     ",
 };
 
-static struct memory_stats stats;
+typedef struct memory_system_state {
+    struct memory_stats stats;
+    u64 alloc_count;
+} memory_system_state;
 
-void initialize_memory() {
-    platform_zero_memory(&stats, sizeof(stats));
+static memory_system_state* state_ptr;
+
+void initialize_memory(u64* memory_requirement, void* state) {
+    *memory_requirement = sizeof(memory_system_state);
+    if (state == NULL) {
+        return;
+    }
+    state_ptr = state;
+    state_ptr->alloc_count = 0;
+    platform_zero_memory(&state_ptr->stats, sizeof(state_ptr->stats));
 }
 
-void shutdown_memory() {
+void shutdown_memory(void* state) {
+    state_ptr = NULL;
 }
 
 KAPI void* kallocate(u64 size, memory_tag tag) {
@@ -46,8 +58,12 @@ KAPI void* kallocate(u64 size, memory_tag tag) {
         KWARN("kallocate called using MEMORY_TAG_UNKNOWN. Reclassify this allocation");
     }
 
-    stats.total_allocated += size;
-    stats.tagged_allocations[tag] += size;
+    // TODO: Do we need to initalize memory earlier so this isn't necessary?
+    if (state_ptr) {
+        state_ptr->stats.total_allocated += size;
+        state_ptr->stats.tagged_allocations[tag] += size;
+        state_ptr->alloc_count++;
+    }
 
     // TODO: Memory alignment
     void* block = platform_allocate(size, false);
@@ -60,8 +76,8 @@ KAPI void kfree(void* block, u64 size, memory_tag tag) {
         KWARN("kallocate called using MEMORY_TAG_UNKNOWN. Reclassify this allocation");
     }
 
-    stats.total_allocated -= size;
-    stats.tagged_allocations[tag] -= size;
+    state_ptr->stats.total_allocated -= size;
+    state_ptr->stats.tagged_allocations[tag] -= size;
     // TODO: Memory alignment
     platform_free(block, false);
 }
@@ -91,17 +107,17 @@ KAPI char* get_memory_usage_str() {
     for (u32 i = 0; i < MEMORY_TAG_MAX_TAGS; i++) {
         char unit[4] = "XiB";
         float amount = 1.0f;
-        if (stats.tagged_allocations[i] >= gib) {
-            amount = (float)stats.tagged_allocations[i] / (float)gib;
+        if (state_ptr->stats.tagged_allocations[i] >= gib) {
+            amount = (float)state_ptr->stats.tagged_allocations[i] / (float)gib;
             unit[0] = 'G';
-        } else if (stats.tagged_allocations[i] >= mib) {
-            amount = (float)stats.tagged_allocations[i] / (float)mib;
+        } else if (state_ptr->stats.tagged_allocations[i] >= mib) {
+            amount = (float)state_ptr->stats.tagged_allocations[i] / (float)mib;
             unit[0] = 'M';
-        } else if (stats.tagged_allocations[i] >= kib) {
-            amount = (float)stats.tagged_allocations[i] / (float)kib;
+        } else if (state_ptr->stats.tagged_allocations[i] >= kib) {
+            amount = (float)state_ptr->stats.tagged_allocations[i] / (float)kib;
             unit[0] = 'K';
         } else {
-            amount = (float)stats.tagged_allocations[i];
+            amount = (float)state_ptr->stats.tagged_allocations[i];
             unit[0] = 'B';
             unit[1] = 0;
         }
@@ -112,4 +128,11 @@ KAPI char* get_memory_usage_str() {
     // TODO: Use custom allocator, use used a fixed size StringBuffer class
     char* out_string = _strdup(buffer);
     return out_string;
+}
+
+u64 get_memory_alloc_count() {
+    if (state_ptr) {
+        return state_ptr->alloc_count;
+    }
+    return 0;
 }

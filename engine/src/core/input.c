@@ -39,7 +39,7 @@ void input_shutdown() {
 }
 
 void input_update(f64 delta_time) {
-    if (initialized) {
+    if (!initialized) {
         return;
     }
     kcopy_memory(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
