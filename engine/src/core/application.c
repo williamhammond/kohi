@@ -15,7 +15,6 @@ typedef struct application_state {
     game* game_inst;
     b8 is_running;
     b8 is_suspended;
-    platform_state platform;
     i16 width;
     i16 height;
     clock clock;
@@ -27,6 +26,12 @@ typedef struct application_state {
 
     u64 logging_system_memory_requirement;
     void* logging_system_state;
+
+    u64 renderer_system_memory_requirement;
+    void* renderer_system_state;
+
+    u64 platform_system_memory_requirement;
+    void* platform_system_state;
 } application_state;
 
 // TODO: Configure this
@@ -70,16 +75,22 @@ b8 application_create(game* game_inst) {
         KFATAL("Failed to initialize event system");
         return false;
     }
-    if (!platform_startup(&app_state->platform,
-                          game_inst->app_config.name,
-                          game_inst->app_config.start_pos_x,
-                          game_inst->app_config.start_pos_y,
-                          game_inst->app_config.start_width,
-                          game_inst->app_config.start_height)) {
+    platform_startup(&app_state->platform_system_memory_requirement, 0, 0, 0, 0, 0, 0);
+    app_state->platform_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->platform_system_memory_requirement);
+    if (!platform_startup(
+            &app_state->platform_system_memory_requirement,
+            app_state->platform_system_state,
+            game_inst->app_config.name,
+            game_inst->app_config.start_pos_x,
+            game_inst->app_config.start_pos_y,
+            game_inst->app_config.start_width,
+            game_inst->app_config.start_height)) {
         return false;
     }
 
-    if (!renderer_initialize(game_inst->app_config.name, &app_state->platform)) {
+    renderer_initialize(&app_state->renderer_system_memory_requirement, NULL, NULL);
+    app_state->renderer_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->renderer_system_memory_requirement);
+    if (!renderer_initialize(&app_state->renderer_system_memory_requirement, app_state->renderer_system_state, game_inst->app_config.name)) {
         KFATAL("Failed to initialize renderer. Shutting down...");
         return false;
     }
@@ -109,7 +120,7 @@ b8 applicaton_run() {
     f64 target_frame_seconds = 1.0f / 60.0f;
 
     while (app_state->is_running) {
-        if (!platform_pump_messages(&app_state->platform)) {
+        if (!platform_pump_messages()) {
             app_state->is_running = false;
         }
         if (!app_state->is_suspended) {
@@ -171,7 +182,7 @@ b8 applicaton_run() {
 
     // TODO: maybe explicitly set is_running to FALSE here?
     // app_state->is_running = FALSE;
-    platform_shutdown(&app_state->platform);
+    platform_shutdown(&app_state->platform_system_state);
 
     shutdown_memory(app_state->memory_system_state);
 

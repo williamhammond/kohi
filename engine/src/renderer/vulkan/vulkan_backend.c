@@ -32,7 +32,7 @@ void regenerate_framebuffers(renderer_backend* backend, vulkan_swapchain* swapch
 void create_command_buffers(renderer_backend* backend);
 b8 recreate_swapchain(renderer_backend* backend);
 
-b8 vulkan_initialize(renderer_backend* backend, const char* application_name, struct platform_state* plat_state) {
+b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
     context.find_memory_index = find_memory_index;
 
     // TODO: Implement custom allocator
@@ -128,7 +128,7 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name, st
 #endif
 
     KDEBUG("Creating Vulkan surface...");
-    if (!platform_create_vulkan_surface(plat_state, &context)) {
+    if (!platform_create_vulkan_surface(&context)) {
         KERROR("Failed to create platform surface");
         return false;
     }
