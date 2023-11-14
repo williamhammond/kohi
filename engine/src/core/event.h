@@ -27,40 +27,40 @@ typedef struct event_context {
 // TODO: Find a more clear way to handle single handler vs multiple handlers
 typedef b8 (*PFN_on_event)(u16 code, void* sender, void* listener_inst, event_context data);
 
-b8 event_initialize();
-void event_shutdown();
+void event_initialize(u64* memory_requirement, void* state);
+void event_shutdown(void* state);
 
 /**
  * Register to listen for when events are sent with the provided code. Events with duplicate
  * listener/callback combos WILL NOT be registered again and will cause this to return FALSE.
- * 
+ *
  * @param code the event code to listen for
  * @param listener A pointer to the listener instance. Can be 0/NULL
  * @param on_event The callback function pointer to be invoked when the event is fired
  * @returns TRUE if the event is successfully registered, FALSE otherwise
-*/
+ */
 KAPI b8 event_register(u16 code, void* listener, PFN_on_event callback);
 
 /**
  * Unregister to lsten for when events are sent with the provided code. if not matching
  * registration is found, this function returns FALSE
- * 
+ *
  * @param code the event code to listen for
  * @param listener A pointer to the listener instance. Can be 0/NULL
  * @param on_event The callback function pointer to be invoked when the event is fired
  * @returns TRUE if the event is successfully unregistered, FALSE otherwise
-*/
+ */
 KAPI b8 event_unregister(u16 code, void* listener, PFN_on_event callback);
 
 /**
  * Fires an event to listeners of the given code. If an event handler returns
  * TRUE, the event is considered handled and is not passed on to any more listeners.
- * 
+ *
  * @param code the event code to listen for
  * @param sender A pointer to the sender. Can be 0/NULL
  * @param context  The event context to be passed to the event handler
  * @returns  TRUE if handled, FALSE otherwise
-*/
+ */
 KAPI b8 event_fire(u16 code, void* sender, event_context context);
 
 typedef enum system_event_code {
@@ -68,54 +68,54 @@ typedef enum system_event_code {
     EVENT_CODE_APPLICATION_QUIT = 0x01,
 
     /*
-    * Keyboard key pressed
-    * Context usage:
-    * u16 key_code = data.data.u16[0];
-    */
+     * Keyboard key pressed
+     * Context usage:
+     * u16 key_code = data.data.u16[0];
+     */
     EVENT_CODE_KEY_PRESSED = 0x02,
 
     /*
-    * Keyboard key released
-    * Context usage:
-    * u16 key_code = data.data.u16[0];
-    */
+     * Keyboard key released
+     * Context usage:
+     * u16 key_code = data.data.u16[0];
+     */
     EVENT_CODE_KEY_RELEASED = 0x03,
 
     /*
-    * Mouse button pressed 
-    * Context usage:
-    * u16 key_code = data.data.u16[0];
-    */
+     * Mouse button pressed
+     * Context usage:
+     * u16 key_code = data.data.u16[0];
+     */
     EVENT_CODE_BUTTON_PRESSED = 0x04,
 
     /*
-    * Mouse button released
-    * Context usage:
-    * u16 key_code = data.data.u16[0];
-    */
+     * Mouse button released
+     * Context usage:
+     * u16 key_code = data.data.u16[0];
+     */
     EVENT_CODE_BUTTON_RELEASED = 0x05,
 
     /*
-    * Mouse moved
-    * Context usage:
-    * u16 y = data.data.u16[0];
-    * u16 x = data.data.u16[1];
-    */
+     * Mouse moved
+     * Context usage:
+     * u16 y = data.data.u16[0];
+     * u16 x = data.data.u16[1];
+     */
     EVENT_CODE_MOUSE_MOVED = 0x06,
 
     /*
-    * Mouse wheel
-    * Context usage:
-    * u16 z = data.data.u16[0];
-    */
+     * Mouse wheel
+     * Context usage:
+     * u16 z = data.data.u16[0];
+     */
     EVENT_CODE_MOUSE_WHEEL = 0x07,
 
     /*
-    * Resized/resolution changed from the OS
-    * Context usage:
-    * u16 width = data.data.u16[0];
-    * u16 height = data.data.u16[1];
-    */
+     * Resized/resolution changed from the OS
+     * Context usage:
+     * u16 width = data.data.u16[0];
+     * u16 height = data.data.u16[1];
+     */
     EVENT_CODE_RESIZE = 0x08,
 
     // 255 Codes are reserved for the system

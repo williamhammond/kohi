@@ -21,6 +21,9 @@ typedef struct application_state {
     f64 last_time;
     linear_allocator systems_allocator;
 
+    u64 event_system_memory_requirement;
+    void* event_system_state;
+
     u64 memory_system_memory_requirement;
     void* memory_system_state;
 
@@ -58,6 +61,10 @@ b8 application_create(game* game_inst) {
     u64 systems_allocator_total_size = 64 * 1024 * 1024;  // 64 mb
     linear_allocator_create(systems_allocator_total_size, NULL, &app_state->systems_allocator);
 
+    event_initialize(&app_state->event_system_memory_requirement, 0);
+    app_state->event_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->event_system_memory_requirement);
+    event_initialize(&app_state->event_system_memory_requirement, app_state->event_system_state);
+
     initialize_memory(&app_state->memory_system_memory_requirement, NULL);
     app_state->memory_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->memory_system_memory_requirement);
     initialize_memory(&app_state->memory_system_memory_requirement, app_state->memory_system_state);
@@ -71,10 +78,6 @@ b8 application_create(game* game_inst) {
 
     initialize_input();
 
-    if (!event_initialize()) {
-        KFATAL("Failed to initialize event system");
-        return false;
-    }
     platform_startup(&app_state->platform_system_memory_requirement, 0, 0, 0, 0, 0, 0);
     app_state->platform_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->platform_system_memory_requirement);
     if (!platform_startup(
@@ -175,7 +178,6 @@ b8 applicaton_run() {
     event_unregister(EVENT_CODE_KEY_PRESSED, NULL, application_on_key);
     event_unregister(EVENT_CODE_KEY_RELEASED, NULL, application_on_key);
 
-    event_shutdown();
     input_shutdown();
 
     renderer_shutdown();
@@ -185,6 +187,8 @@ b8 applicaton_run() {
     platform_shutdown(&app_state->platform_system_state);
 
     shutdown_memory(app_state->memory_system_state);
+
+    event_shutdown(app_state->event_system_state);
 
     return true;
 }
