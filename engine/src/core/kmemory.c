@@ -76,8 +76,10 @@ KAPI void kfree(void* block, u64 size, memory_tag tag) {
         KWARN("kallocate called using MEMORY_TAG_UNKNOWN. Reclassify this allocation");
     }
 
-    state_ptr->stats.total_allocated -= size;
-    state_ptr->stats.tagged_allocations[tag] -= size;
+    if (state_ptr) {
+        state_ptr->stats.total_allocated -= size;
+        state_ptr->stats.tagged_allocations[tag] -= size;
+    }
     // TODO: Memory alignment
     platform_free(block, false);
 }
