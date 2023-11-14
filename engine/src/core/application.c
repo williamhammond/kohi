@@ -30,6 +30,9 @@ typedef struct application_state {
     u64 logging_system_memory_requirement;
     void* logging_system_state;
 
+    u64 input_system_memory_requirement;
+    void* input_system_state;
+
     u64 renderer_system_memory_requirement;
     void* renderer_system_state;
 
@@ -76,7 +79,9 @@ b8 application_create(game* game_inst) {
         return false;
     }
 
-    initialize_input();
+    initialize_input(&app_state->input_system_memory_requirement, 0);
+    app_state->input_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->input_system_memory_requirement);
+    initialize_input(&app_state->input_system_memory_requirement, app_state->input_system_state);
 
     platform_startup(&app_state->platform_system_memory_requirement, 0, 0, 0, 0, 0, 0);
     app_state->platform_system_state = linear_allocator_allocate(&app_state->systems_allocator, app_state->platform_system_memory_requirement);
@@ -178,7 +183,7 @@ b8 applicaton_run() {
     event_unregister(EVENT_CODE_KEY_PRESSED, NULL, application_on_key);
     event_unregister(EVENT_CODE_KEY_RELEASED, NULL, application_on_key);
 
-    input_shutdown();
+    input_shutdown(app_state->input_system_state);
 
     renderer_shutdown();
 
