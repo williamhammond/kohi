@@ -40,13 +40,13 @@ void test_manager_run_tests() {
         clock_update(&test_time);
 
         if (result == true) {
-            ++passed;
+            passed++;
         } else if (result == BYPASS) {
             KWARN("[SKIPPED]: %s", tests[i].desc);
-            ++skipped;
+            skipped++;
         } else {
             KERROR("[FAILED]: %s", tests[i].desc);
-            ++failed;
+            failed++;
         }
         char status[20];
         string_format(status, failed ? "*** %d FAILED ***" : "SUCCESS", failed);
