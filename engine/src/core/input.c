@@ -81,7 +81,7 @@ b8 input_was_key_down(keys key) {
 }
 
 void input_process_key(keys key, b8 pressed) {
-    if (state_ptr->keyboard_current.keys[key] != pressed) {
+    if (state_ptr && state_ptr->keyboard_current.keys[key] != pressed) {
         state_ptr->keyboard_current.keys[key] = pressed;
 
         event_context context;
