@@ -1,6 +1,13 @@
 {
     "files.associations": {
-        "vulkan_types.inl": "c"
+        "vulkan_types.inl": "c",
+        "algorithm": "c",
+        "functional": "c",
+        "xutility": "c",
+        "optional": "c",
+        "system_error": "c",
+        "type_traits": "c",
+        "xtr1common": "c"
     },
     "vim.handleKeys": {
         "<C-p>": false

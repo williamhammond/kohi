@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/bin/testbed.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/bin",
             "environment": [],
             "console": "integratedTerminal"
         },

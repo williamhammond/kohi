@@ -6,6 +6,7 @@
 
 b8 game_initialize(game* game_inst) {
     KDEBUG("game_initialize() called");
+
     return true;
 }
 

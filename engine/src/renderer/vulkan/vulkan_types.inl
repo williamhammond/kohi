@@ -1,15 +1,14 @@
 #pragma once
 
-#include "defines.h"
 #include "core/asserts.h"
 
+#include "defines.h"
 #include <vulkan/vulkan.h>
 
-#define VK_CHECK(expr)                  \
-    {                                   \
-        KASSERT(expr == VK_SUCCESS);    \
+#define VK_CHECK(expr)               \
+    {                                \
+        KASSERT(expr == VK_SUCCESS); \
     }
-
 
 typedef struct vulkan_swapchain_support_info {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -74,7 +73,7 @@ typedef struct vulkan_framebuffer {
 
 typedef struct vulkan_swapchain {
     VkSurfaceFormatKHR image_format;
-    u8 max_frames_in_flight; 
+    u8 max_frames_in_flight;
     VkSwapchainKHR handle;
     u32 image_count;
     VkImage* images;
@@ -99,10 +98,29 @@ typedef struct vulkan_command_buffer {
     vulkan_command_buffer_state state;
 } vulkan_command_buffer;
 
-typedef struct vulkan_fench {
+typedef struct vulkan_fence {
     VkFence handle;
     b8 is_signaled;
 } vulkan_fence;
+
+typedef struct vulkan_shader_stage {
+    VkShaderModuleCreateInfo create_info;
+    VkShaderModule handle;
+    VkPipelineShaderStageCreateInfo shader_stage_create_info;
+} vulkan_shader_stage;
+
+typedef struct vulkan_pipeline {
+    VkPipeline handle;
+    VkPipelineLayout pipeline_layout;
+} vulkan_pipeline;
+
+// vertex, shader
+#define OBJECT_SHADER_STAGE_COUNT 2
+typedef struct vulkan_object_shader {
+    vulkan_shader_stage stages[OBJECT_SHADER_STAGE_COUNT];
+
+    vulkan_pipeline pipeline;
+} vulkan_object_shader;
 
 typedef struct vulkan_context {
     u32 framebuffer_width;
@@ -137,6 +155,8 @@ typedef struct vulkan_context {
     u32 current_frame;
 
     b8 recreating_swapchain;
+
+    vulkan_object_shader object_shader;
 
     i32 (*find_memory_index)(u32 type_filter, u32 property_flags);
 } vulkan_context;
