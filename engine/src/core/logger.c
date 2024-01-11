@@ -30,6 +30,7 @@ b8 initialize_logging(u64* memory_requirement, void* state) {
     }
     state_ptr = state;
 
+    // TODO: handle path properly
     if (!filesystem_open("C:\\Users\\willi\\Code\\kohi\\bin\\console.log", FILE_MODE_WRITE, false, &state_ptr->log_file_handle)) {
         platform_console_write_error("ERROR: Unable to open console.log for writing", LOG_LEVEL_ERROR);
         return false;

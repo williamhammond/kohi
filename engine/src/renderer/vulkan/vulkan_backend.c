@@ -189,6 +189,8 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
 void vulkan_shutdown(renderer_backend* backend) {
     vkDeviceWaitIdle(context.device.logical_device);
 
+    vulkan_object_shader_destroy(&context, &context.object_shader);
+
     for (u8 i = 0; i < context.swapchain.max_frames_in_flight; i++) {
         if (context.image_available_semaphores[i]) {
             vkDestroySemaphore(
