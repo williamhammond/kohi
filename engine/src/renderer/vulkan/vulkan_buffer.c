@@ -28,13 +28,13 @@ b8 vulkan_buffer_create(
     VkMemoryRequirements requirements;
     vkGetBufferMemoryRequirements(context->device.logical_device, out_buffer->handle, &requirements);
     out_buffer->memory_index = context->find_memory_index(requirements.memoryTypeBits, out_buffer->memory_property_flags);
-    if (out_buffer->memory_index) {
+    if (out_buffer->memory_index == -1) {
         KERROR("Unable to create vulkan buffer because the required memory type index was not found");
         return false;
     }
 
     VkMemoryAllocateInfo allocate_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
-    allocate_info.allocationSize = size;
+    allocate_info.allocationSize = requirements.size;
     allocate_info.memoryTypeIndex = (u32)out_buffer->memory_index;
 
     VkResult result = vkAllocateMemory(
