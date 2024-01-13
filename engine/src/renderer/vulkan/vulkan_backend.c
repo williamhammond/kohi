@@ -7,7 +7,9 @@
 #include "core/kstring.h"
 #include "core/logger.h"
 
+#include "math/math_types.h"
 #include "shaders/vulkan_object_shader.h"
+#include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_fence.h"
@@ -28,6 +30,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data);
 
 i32 find_memory_index(u32 type_filter, u32 property_flags);
+b8 create_buffers(vulkan_context* context);
 
 void regenerate_framebuffers(renderer_backend* backend, vulkan_swapchain* swapchain, vulkan_renderpass* renderpass);
 void create_command_buffers(renderer_backend* backend);
@@ -183,11 +186,16 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
         return false;
     }
 
+    create_buffers(&context);
+    KINFO("vulkan renderer initalized");
     return true;
 }
 
 void vulkan_shutdown(renderer_backend* backend) {
     vkDeviceWaitIdle(context.device.logical_device);
+
+    vulkan_buffer_destroy(&context, &context.object_vertex_buffer);
+    vulkan_buffer_destroy(&context, &context.object_index_buffer);
 
     vulkan_object_shader_destroy(&context, &context.object_shader);
 
@@ -548,4 +556,34 @@ b8 recreate_swapchain(renderer_backend* backend) {
     context.recreating_swapchain = false;
 
     return true;
+}
+
+b8 create_buffers(vulkan_context* context) {
+    VkMemoryPropertyFlagBits memory_property_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    const u64 vertex_buffer_size = sizeof(vertex_3d) * 1024 * 1024;
+    if (!vulkan_buffer_create(
+            context,
+            vertex_buffer_size,
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            memory_property_flags,
+            true,
+            &context->object_vertex_buffer)) {
+        KERROR("Error creating vertex buffer.");
+        return false;
+    }
+    context->geometry_vertex_offset = 0;
+
+    const u64 index_buffer_size = sizeof(u32) * 1024 * 1024;
+    if (!vulkan_buffer_create(
+            context,
+            index_buffer_size,
+            VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            memory_property_flags,
+            true,
+            &context->object_index_buffer)) {
+        KERROR("Error creating vertex buffer.");
+        return false;
+    }
+    context->geometry_index_offset = 0;
 }
