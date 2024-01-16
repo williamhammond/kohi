@@ -391,6 +391,17 @@ b8 vulkan_begin_frame(renderer_backend* backend, f32 delta_time) {
         &context.main_renderpass,
         context.swapchain.framebuffers[context.image_index].handle);
 
+    return true;
+}
+
+// Take copies instead of references so the engine can continue simulation without being blocked by renderering
+void vulkan_renderer_update_global_state(mat4 projection, mat4 view, vec3 view_position, vec4 ambient_colour, i32 mode) {
+    vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
+    vulkan_object_shader_use(&context, &context.object_shader);
+    context.object_shader.global_ubo.projection = projection;
+    context.object_shader.global_ubo.view = view;
+    vulkan_object_shader_update_global_state(&context, &context.object_shader);
+
     // TODO: temporary test code
     vulkan_object_shader_use(&context, &context.object_shader);
 
@@ -400,10 +411,7 @@ b8 vulkan_begin_frame(renderer_backend* backend, f32 delta_time) {
     vkCmdBindIndexBuffer(command_buffer->handle, context.object_index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
 
     vkCmdDrawIndexed(command_buffer->handle, 6, 1, 0, 0, 0);
-
     // TODO: end temporary test code
-
-    return true;
 }
 
 b8 vulkan_end_frame(renderer_backend* backend, f32 delta_time) {

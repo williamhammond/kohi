@@ -3,6 +3,7 @@
 #include "core/kmemory.h"
 #include "core/logger.h"
 
+#include "math/kmath.h"
 #include "renderer_backend.h"
 
 typedef struct renderer_system_state {
@@ -49,11 +50,13 @@ b8 renderer_end_frame(f32 delta_time) {
     }
     b8 result = state_ptr->backend.end_frame(&state_ptr->backend, delta_time);
     state_ptr->backend.frame_number++;
+    return true;
 }
 
 b8 renderer_draw_frame(render_packet* packet) {
     // TODO: Figure out why a render frame not beginning is not as serious of an issue as not ending correctly
     if (renderer_begin_frame(packet->delta_time)) {
+        state_ptr->backend.update_global_state(mat4_identity(), mat4_identity(), vec3_zero(), vec4_one(), 0);
         b8 result = renderer_end_frame(packet->delta_time);
         // TODO: Should error handling really be done here?
         if (!result) {

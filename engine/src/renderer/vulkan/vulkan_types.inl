@@ -3,6 +3,7 @@
 #include "core/asserts.h"
 
 #include "defines.h"
+#include "renderer/renderer_types.inl"
 #include <vulkan/vulkan.h>
 
 #define VK_CHECK(expr)               \
@@ -128,6 +129,16 @@ typedef struct vulkan_pipeline {
 #define OBJECT_SHADER_STAGE_COUNT 2
 typedef struct vulkan_object_shader {
     vulkan_shader_stage stages[OBJECT_SHADER_STAGE_COUNT];
+
+    VkDescriptorPool global_descriptor_pool;
+
+    // One descriptor set per frame - max 3 for triple buffering
+    VkDescriptorSet global_descriptor_sets[3];
+    VkDescriptorSetLayout global_descriptor_set_layout;
+
+    global_uniform_object global_ubo;
+
+    vulkan_buffer global_uniform_buffer;
 
     vulkan_pipeline pipeline;
 } vulkan_object_shader;
