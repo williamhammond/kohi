@@ -56,7 +56,16 @@ b8 renderer_end_frame(f32 delta_time) {
 b8 renderer_draw_frame(render_packet* packet) {
     // TODO: Figure out why a render frame not beginning is not as serious of an issue as not ending correctly
     if (renderer_begin_frame(packet->delta_time)) {
-        state_ptr->backend.update_global_state(mat4_identity(), mat4_identity(), vec3_zero(), vec4_one(), 0);
+        mat4 projection = mat4_perspective(deg_to_rad(45.0f), 1200 / 720.0f, 0.1f, 100.0f);
+        mat4 view = mat4_translation((vec3){0, 0, -3.0f});
+        state_ptr->backend.update_global_state(projection, view, vec3_zero(), vec4_one(), 0);
+
+        static f32 angle = 0.01f;
+        angle += 0.01f;
+        quat rotation = quat_from_axis_angle(vec3_forward(), angle, false);
+        mat4 model = quat_to_rotation_matrix(rotation, vec3_zero());
+        state_ptr->backend.update_object(&state_ptr->backend, model);
+
         b8 result = renderer_end_frame(packet->delta_time);
         // TODO: Should error handling really be done here?
         if (!result) {

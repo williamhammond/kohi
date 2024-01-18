@@ -12,6 +12,7 @@ b8 renderer_backend_create(renderer_backend_type type, renderer_backend* out_ren
         out_renderer_backend->update_global_state = vulkan_renderer_update_global_state;
         out_renderer_backend->end_frame = vulkan_end_frame;
         out_renderer_backend->resized = vulkan_resized;
+        out_renderer_backend->update_object = vulkan_update_object;
 
         return true;
     }
@@ -25,4 +26,5 @@ void renderer_backend_destroy(renderer_backend* backend) {
     backend->update_global_state = NULL;
     backend->end_frame = NULL;
     backend->resized = NULL;
+    backend->update_object = NULL;
 }
