@@ -9,6 +9,7 @@
 typedef struct renderer_system_state {
     renderer_backend backend;
     mat4 projection;
+    mat4 view;
     f32 near_clip;
     f32 far_clip;
 } renderer_system_state;
@@ -28,6 +29,7 @@ b8 renderer_initialize(u64* memory_requirement, void* state, const char* applica
     state_ptr->near_clip = 0.1f;
     state_ptr->far_clip = 1000.0f;
     state_ptr->projection = mat4_perspective(deg_to_rad(45.0f), 1200 / 720.0f, state_ptr->near_clip, state_ptr->far_clip);
+    state_ptr->view = mat4_translation((vec3){0, 0, -3.0f});
 
     if (!state_ptr->backend.initialize(&state_ptr->backend, application_name)) {
         KFATAL("Failed to initialize renderer backend");
@@ -63,8 +65,7 @@ b8 renderer_end_frame(f32 delta_time) {
 b8 renderer_draw_frame(render_packet* packet) {
     // TODO: Figure out why a render frame not beginning is not as serious of an issue as not ending correctly
     if (renderer_begin_frame(packet->delta_time)) {
-        mat4 view = mat4_translation((vec3){0, 0, -3.0f});
-        state_ptr->backend.update_global_state(state_ptr->projection, view, vec3_zero(), vec4_one(), 0);
+        state_ptr->backend.update_global_state(state_ptr->projection, state_ptr->view, vec3_zero(), vec4_one(), 0);
 
         static f32 angle = 0.01f;
         angle += 0.01f;
@@ -89,4 +90,8 @@ void renderer_on_resized(u16 width, u16 height) {
     } else {
         KWARN("renderer backend does not exist to accept resize: %i %i", width, height);
     }
+}
+
+void renderer_set_view(mat4 view) {
+    state_ptr->view = view;
 }
