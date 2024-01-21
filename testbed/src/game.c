@@ -8,11 +8,22 @@
 // Hack: Remove this, it should not be available outside the engine
 #include <renderer/renderer_frontend.h>
 
+// Function that prints a mat4 matrix.
+void print_mat4(mat4 m) {
+    KDEBUG("\n");
+    KDEBUG("| %1.8f  %1.8f  %1.8f  %1.8f |", m.data[0], m.data[1], m.data[2], m.data[3]);
+    KDEBUG("| %1.8f  %1.8f  %1.8f  %1.8f |", m.data[4], m.data[5], m.data[6], m.data[7]);
+    KDEBUG("| %1.8f  %1.8f  %1.8f  %1.8f |", m.data[8], m.data[9], m.data[10], m.data[11]);
+    KDEBUG("| %1.8f  %1.8f  %1.8f  %1.8f |", m.data[12], m.data[13], m.data[14], m.data[15]);
+    KDEBUG("\n");
+}
+
 void recalculate_view_matrix(game_state* state) {
     if (!state->camera_view_dirty) {
         return;
     }
     mat4 rotation = mat4_euler_xyz(state->camera_euler.x, state->camera_euler.y, state->camera_euler.z);
+    print_mat4(rotation);
     mat4 translation = mat4_translation(state->camera_position);
 
     state->view = mat4_mul(rotation, translation);
@@ -62,20 +73,20 @@ b8 game_update(game* game_inst, f32 delta_time) {
 
     // HACK: Temporary controls for camera
     if (input_is_key_down(KEY_UP)) {
-        camera_pitch(state, 1.0f * delta_time);
+        camera_pitch(state, 10000.0f * delta_time);
     }
     if (input_is_key_down(KEY_LEFT)) {
-        camera_yaw(state, 1.0f * delta_time);
+        camera_yaw(state, 10000.0f * delta_time);
     }
     if (input_is_key_down(KEY_RIGHT)) {
-        camera_yaw(state, -1.0f * delta_time);
+        camera_yaw(state, -10000.0f * delta_time);
     }
-    if (input_is_key_down(KEY_UP)) {
-        camera_pitch(state, -1.0f * delta_time);
+    if (input_is_key_down(KEY_DOWN)) {
+        camera_pitch(state, -10000.0f * delta_time);
     }
 
-    f32 temp_move_speed = 100000.0f;
     vec3 velocity = vec3_zero();
+    f32 temp_move_speed = 100000.0f;
 
     if (input_is_key_down('W')) {
         // TODO: Calculate this in a way that doesn't make it a frame behind
@@ -109,6 +120,12 @@ b8 game_update(game* game_inst, f32 delta_time) {
         state->camera_position.x += velocity.x * temp_move_speed * delta_time;
         state->camera_position.y += velocity.y * temp_move_speed * delta_time;
         state->camera_position.z += velocity.z * temp_move_speed * delta_time;
+        state->camera_view_dirty = true;
+    }
+
+    if (input_is_key_down(KEY_ENTER)) {
+        state->camera_position = (vec3){0, 0, 30.0f};
+        state->camera_euler = vec3_zero();
         state->camera_view_dirty = true;
     }
 

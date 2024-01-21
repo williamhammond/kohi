@@ -68,7 +68,7 @@ b8 renderer_draw_frame(render_packet* packet) {
         state_ptr->backend.update_global_state(state_ptr->projection, state_ptr->view, vec3_zero(), vec4_one(), 0);
 
         static f32 angle = 0.01f;
-        angle += 0.01f;
+        angle += 0.001f;
         quat rotation = quat_from_axis_angle(vec3_forward(), angle, false);
         mat4 model = quat_to_rotation_matrix(rotation, vec3_zero());
         state_ptr->backend.update_object(&state_ptr->backend, model);
@@ -85,8 +85,8 @@ b8 renderer_draw_frame(render_packet* packet) {
 
 void renderer_on_resized(u16 width, u16 height) {
     if (state_ptr) {
+        state_ptr->projection = mat4_perspective(deg_to_rad(45.0f), width / (f32)height, state_ptr->near_clip, state_ptr->far_clip);
         state_ptr->backend.resized(&state_ptr->backend, width, height);
-        state_ptr->projection = mat4_perspective(deg_to_rad(45.0f), width / (f32)(height), state_ptr->near_clip, state_ptr->far_clip);
     } else {
         KWARN("renderer backend does not exist to accept resize: %i %i", width, height);
     }

@@ -9,9 +9,10 @@ typedef enum renderer_backend_type {
 
 // Some NVIDIA cards need uniforms to be exactly 256 bytes.
 typedef struct global_uniform_object {
-    mat4 projection;    // 64 bytes
-    mat4 view;          // 64 bytes
-    char padding[128];  // 128 bytes
+    mat4 projection;  // 64 bytes
+    mat4 view;        // 64 bytes
+    mat4 junkA;       // 64 bytes
+    mat4 junkB;       // 64 bytes
 } global_uniform_object;
 
 typedef struct renderer_backend {
