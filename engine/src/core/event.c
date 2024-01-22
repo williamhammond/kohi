@@ -32,7 +32,7 @@ void event_initialize(u64* memory_requirement, void* state) {
 void event_shutdown(void* state) {
     if (state_ptr) {
         // Free the events arrays. And objects pointed to should be destroyed on their own.
-        for (u16 i = 0; i < MAX_MESSAGE_CODES; ++i) {
+        for (u16 i = 0; i < MAX_MESSAGE_CODES; i++) {
             if (state_ptr->registered[i].events != 0) {
                 darray_destroy(state_ptr->registered[i].events);
                 state_ptr->registered[i].events = NULL;

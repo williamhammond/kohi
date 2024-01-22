@@ -70,8 +70,11 @@ b8 renderer_draw_frame(render_packet* packet) {
         static f32 angle = 0.01f;
         angle += 0.001f;
         quat rotation = quat_from_axis_angle(vec3_forward(), angle, false);
-        mat4 model = quat_to_rotation_matrix(rotation, vec3_zero());
-        state_ptr->backend.update_object(&state_ptr->backend, model);
+
+        geometry_render_data data = {};
+        data.model = quat_to_rotation_matrix(rotation, vec3_zero());
+        data.object_id = 0;
+        state_ptr->backend.update_object(data);
 
         b8 result = renderer_end_frame(packet->delta_time);
         // TODO: Should error handling really be done here?

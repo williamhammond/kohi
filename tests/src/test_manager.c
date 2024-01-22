@@ -33,7 +33,7 @@ void test_manager_run_tests() {
     clock total_time;
     clock_start(&total_time);
 
-    for (u32 i = 0; i < count; ++i) {
+    for (u32 i = 0; i < count; i++) {
         clock test_time;
         clock_start(&test_time);
         u8 result = tests[i].func();

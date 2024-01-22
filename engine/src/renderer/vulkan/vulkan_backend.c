@@ -224,6 +224,12 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
     upload_data_range(&context, context.device.graphics_command_pool, 0, context.device.graphics_queue, &context.object_vertex_buffer, 0, sizeof(vertex_3d) * VERT_COUNT, verts);
     upload_data_range(&context, context.device.graphics_command_pool, 0, context.device.graphics_queue, &context.object_index_buffer, 0, sizeof(u32) * INDEX_COUNT, indices);
 
+    u32 object_id = 0;
+    if (!vulkan_object_shader_acquire_resources(&context, &context.object_shader, &object_id)) {
+        KERROR("Failed to acquire shader resources.");
+        return false;
+    }
+
     KINFO("vulkan renderer initalized");
     return true;
 }
@@ -312,6 +318,7 @@ void vulkan_resized(renderer_backend* backend, u16 width, u16 height) {
 }
 
 b8 vulkan_begin_frame(renderer_backend* backend, f32 delta_time) {
+    context.frame_delta_time = delta_time;
     vulkan_device* device = &context.device;
     if (context.recreating_swapchain) {
         VkResult result = vkDeviceWaitIdle(device->logical_device);
@@ -401,7 +408,7 @@ void vulkan_renderer_update_global_state(mat4 projection, mat4 view, vec3 view_p
     vulkan_object_shader_use(&context, &context.object_shader);
     context.object_shader.global_ubo.projection = projection;
     context.object_shader.global_ubo.view = view;
-    vulkan_object_shader_update_global_state(&context, &context.object_shader);
+    vulkan_object_shader_update_global_state(&context, &context.object_shader, context.frame_delta_time);
 }
 
 b8 vulkan_end_frame(renderer_backend* backend, f32 delta_time) {
@@ -462,8 +469,8 @@ b8 vulkan_end_frame(renderer_backend* backend, f32 delta_time) {
     return true;
 }
 
-void vulkan_update_object(struct renderer_backend* backend, mat4 model) {
-    vulkan_object_shader_update_object(&context, &context.object_shader, model);
+void vulkan_update_object(geometry_render_data data) {
+    vulkan_object_shader_update_object(&context, &context.object_shader, data);
 
     // TODO: temporary test code
     vulkan_object_shader_use(&context, &context.object_shader);
@@ -655,7 +662,7 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
     out_texture->width = width;
     out_texture->height = height;
     out_texture->channel_count = channel_count;
-    out_texture->generation = 0;
+    out_texture->generation = INVALID_ID;
 
     // TODO: Use an allocator for this.
     out_texture->internal_data = (vulkan_texture_data*)kallocate(sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
@@ -700,6 +707,7 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     vulkan_image_copy_from_buffer(&context, &data->image, staging.handle, &temp_buffer);
+    vulkan_buffer_destroy(&context, &staging);
 
     vulkan_image_transition_layout(
         &context,
@@ -740,6 +748,8 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
 }
 
 void vulkan_renderer_destroy_texture(struct texture* texture) {
+    vkDeviceWaitIdle(context.device.logical_device);
+
     vulkan_texture_data* data = (vulkan_texture_data*)texture->internal_data;
 
     vulkan_image_destroy(&context, &data->image);
@@ -749,4 +759,54 @@ void vulkan_renderer_destroy_texture(struct texture* texture) {
 
     kfree(texture->internal_data, sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
     kzero_memory(texture, sizeof(struct texture));
+}
+b8 vulkan_object_shader_acquire_resources(vulkan_context* context, struct vulkan_object_shader* shader, u32* out_object_id) {
+    // TODO: free list
+    *out_object_id = shader->object_uniform_buffer_index;
+    shader->object_uniform_buffer_index++;
+
+    u32 object_id = *out_object_id;
+    vulkan_object_shader_object_state* object_state = &shader->object_states[object_id];
+    for (u32 i = 0; i < VULKAN_DESCRIPTORS_PER_OBJECT; i++) {
+        for (u32 j = 0; j < 3; j++) {
+            object_state->descriptor_states[i].generations[j] = INVALID_ID;
+        }
+    }
+
+    // Allocate descriptor sets.
+    VkDescriptorSetLayout layouts[3] = {
+        shader->object_descriptor_set_layout,
+        shader->object_descriptor_set_layout,
+        shader->object_descriptor_set_layout};
+
+    VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+    alloc_info.descriptorPool = shader->object_descriptor_pool;
+    alloc_info.descriptorSetCount = 3;  // one per frame
+    alloc_info.pSetLayouts = layouts;
+    VkResult result = vkAllocateDescriptorSets(context->device.logical_device, &alloc_info, object_state->descriptor_sets);
+    if (result != VK_SUCCESS) {
+        KERROR("Error allocating descriptor sets in shader!");
+        return false;
+    }
+
+    return true;
+}
+
+void vulkan_object_shader_release_resources(vulkan_context* context, struct vulkan_object_shader* shader, u32 object_id) {
+    vulkan_object_shader_object_state* object_state = &shader->object_states[object_id];
+
+    const u32 descriptor_set_count = 3;
+    // Release object descriptor sets.
+    VkResult result = vkFreeDescriptorSets(context->device.logical_device, shader->object_descriptor_pool, descriptor_set_count, object_state->descriptor_sets);
+    if (result != VK_SUCCESS) {
+        KERROR("Error freeing object shader descriptor sets!");
+    }
+
+    for (u32 i = 0; i < VULKAN_DESCRIPTORS_PER_OBJECT; i++) {
+        for (u32 j = 0; j < 3; j++) {
+            object_state->descriptor_states[i].generations[j] = INVALID_ID;
+        }
+    }
+
+    // TODO: add the object_id to the free list
 }

@@ -592,7 +592,7 @@ KINLINE vec4 vec4_one() {
  */
 KINLINE vec4 vec4_add(vec4 vector_0, vec4 vector_1) {
     vec4 result;
-    for (u64 i = 0; i < 4; ++i) {
+    for (u64 i = 0; i < 4; i++) {
         result.elements[i] = vector_0.elements[i] + vector_1.elements[i];
     }
     return result;
@@ -607,7 +607,7 @@ KINLINE vec4 vec4_add(vec4 vector_0, vec4 vector_1) {
  */
 KINLINE vec4 vec4_sub(vec4 vector_0, vec4 vector_1) {
     vec4 result;
-    for (u64 i = 0; i < 4; ++i) {
+    for (u64 i = 0; i < 4; i++) {
         result.elements[i] = vector_0.elements[i] - vector_1.elements[i];
     }
     return result;
@@ -622,7 +622,7 @@ KINLINE vec4 vec4_sub(vec4 vector_0, vec4 vector_1) {
  */
 KINLINE vec4 vec4_mul(vec4 vector_0, vec4 vector_1) {
     vec4 result;
-    for (u64 i = 0; i < 4; ++i) {
+    for (u64 i = 0; i < 4; i++) {
         result.elements[i] = vector_0.elements[i] * vector_1.elements[i];
     }
     return result;
@@ -637,7 +637,7 @@ KINLINE vec4 vec4_mul(vec4 vector_0, vec4 vector_1) {
  */
 KINLINE vec4 vec4_div(vec4 vector_0, vec4 vector_1) {
     vec4 result;
-    for (u64 i = 0; i < 4; ++i) {
+    for (u64 i = 0; i < 4; i++) {
         result.elements[i] = vector_0.elements[i] / vector_1.elements[i];
     }
     return result;
@@ -735,8 +735,8 @@ KINLINE mat4 mat4_mul(mat4 matrix_0, mat4 matrix_1) {
     const f32* m2_ptr = matrix_1.data;
     f32* dst_ptr = out_matrix.data;
 
-    for (i32 i = 0; i < 4; ++i) {
-        for (i32 j = 0; j < 4; ++j) {
+    for (i32 i = 0; i < 4; i++) {
+        for (i32 j = 0; j < 4; j++) {
             *dst_ptr =
                 m1_ptr[0] * m2_ptr[0 + j] +
                 m1_ptr[1] * m2_ptr[4 + j] +
