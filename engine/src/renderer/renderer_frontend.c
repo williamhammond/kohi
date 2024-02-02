@@ -5,6 +5,7 @@
 
 #include "math/kmath.h"
 #include "renderer_backend.h"
+#include "resources/resource_types.h"
 
 typedef struct renderer_system_state {
     renderer_backend backend;
@@ -12,6 +13,8 @@ typedef struct renderer_system_state {
     mat4 view;
     f32 near_clip;
     f32 far_clip;
+
+    texture default_texture;
 } renderer_system_state;
 
 static renderer_system_state* state_ptr;
@@ -36,11 +39,49 @@ b8 renderer_initialize(u64* memory_requirement, void* state, const char* applica
         return false;
     }
 
+    // NOTE: Create default texture, a 256x256 blue/white checkerboard pattern.
+    // This is done in code to eliminate asset dependencies.
+    KTRACE("Creating default texture...");
+    const u32 tex_dimension = 256;
+    const u32 channels = 4;
+    const u32 pixel_count = tex_dimension * tex_dimension;
+    u8 pixels[256 * 256 * 4];
+    // u8* pixels = kallocate(sizeof(u8) * pixel_count * bpp, MEMORY_TAG_TEXTURE);
+    kset_memory(pixels, 255, sizeof(u8) * pixel_count * channels);
+
+    for (u64 row = 0; row < tex_dimension; row++) {
+        for (u64 col = 0; col < tex_dimension; col++) {
+            u64 index = (row * tex_dimension) + col;
+            u64 index_bpp = index * channels;
+            if (row % 2) {
+                if (col % 2) {
+                    pixels[index_bpp + 0] = 0;
+                    pixels[index_bpp + 1] = 0;
+                }
+            } else {
+                if (!(col % 2)) {
+                    pixels[index_bpp + 0] = 0;
+                    pixels[index_bpp + 1] = 0;
+                }
+            }
+        }
+    }
+    renderer_create_texture(
+        "default",
+        false,
+        tex_dimension,
+        tex_dimension,
+        4,
+        pixels,
+        false,
+        &state_ptr->default_texture);
+
     return true;
 }
 
 void renderer_shutdown() {
     if (state_ptr) {
+        renderer_destroy_texture(&state_ptr->default_texture);
         state_ptr->backend.shutdown(&state_ptr->backend);
     }
     state_ptr = NULL;
@@ -73,6 +114,7 @@ b8 renderer_draw_frame(render_packet* packet) {
 
         geometry_render_data data = {};
         data.model = quat_to_rotation_matrix(rotation, vec3_zero());
+        data.textures[0] = &state_ptr->default_texture;
         data.object_id = 0;
         state_ptr->backend.update_object(data);
 

@@ -94,12 +94,11 @@ b8 vulkan_object_shader_create(vulkan_context* context, vulkan_object_shader* ou
     scissor.extent.height = context->framebuffer_height;
 
     u32 offset = 0;
-    // TODO figure out why the compiler thinks using attribute_count is a VLA
-    const i32 attribute_count = 1;
-    VkVertexInputAttributeDescription attribute_descriptions[1];
-    VkFormat formats[1] = {VK_FORMAT_R32G32B32_SFLOAT};
-    u64 sizes[1] = {sizeof(vec3)};
-    for (u32 i = 0; i < 1; i++) {
+#define ATTRIBUTE_COUNT 2
+    VkVertexInputAttributeDescription attribute_descriptions[ATTRIBUTE_COUNT];
+    VkFormat formats[ATTRIBUTE_COUNT] = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
+    u64 sizes[ATTRIBUTE_COUNT] = {sizeof(vec3), sizeof(vec2)};
+    for (u32 i = 0; i < ATTRIBUTE_COUNT; i++) {
         attribute_descriptions[i].binding = 0;
         attribute_descriptions[i].location = i;
         attribute_descriptions[i].format = formats[i];
@@ -122,7 +121,7 @@ b8 vulkan_object_shader_create(vulkan_context* context, vulkan_object_shader* ou
     if (!vulkan_graphics_pipeline_create(
             context,
             &context->main_renderpass,
-            attribute_count,
+            ATTRIBUTE_COUNT,
             attribute_descriptions,
             DESCRIPTOR_SET_LAYOUT_COUNT,
             layouts,

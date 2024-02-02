@@ -208,15 +208,23 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
 
     verts[0].position.x = -0.5;
     verts[0].position.y = -0.5;
+    verts[0].texcoord.x = 0.0f;
+    verts[0].texcoord.y = 0.0f;
 
     verts[1].position.x = 0.5;
     verts[1].position.y = 0.5;
+    verts[1].texcoord.x = 1.0f;
+    verts[1].texcoord.y = 1.0f;
 
     verts[2].position.x = -0.5;
     verts[2].position.y = 0.5;
+    verts[2].texcoord.x = 0.0f;
+    verts[2].texcoord.y = 1.0f;
 
     verts[3].position.x = 0.5;
     verts[3].position.y = -0.5;
+    verts[3].texcoord.y = 1.0f;
+    verts[3].texcoord.x = 0.0f;
 
 #define INDEX_COUNT 6
     u32 indices[INDEX_COUNT] = {0, 1, 2, 0, 3, 1};
@@ -664,14 +672,16 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
     out_texture->channel_count = channel_count;
     out_texture->generation = INVALID_ID;
 
+    // Internal data creation.
     // TODO: Use an allocator for this.
     out_texture->internal_data = (vulkan_texture_data*)kallocate(sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
     vulkan_texture_data* data = (vulkan_texture_data*)out_texture->internal_data;
     VkDeviceSize image_size = width * height * channel_count;
 
-    // TODO: detect format and dynamically set this
+    // NOTE: Assumes 8 bits per channel.
     VkFormat image_format = VK_FORMAT_R8G8B8A8_UNORM;
 
+    // Create a staging buffer and load data into it.
     VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     VkMemoryPropertyFlags memory_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     vulkan_buffer staging;
@@ -679,7 +689,8 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
 
     vulkan_buffer_load_data(&context, &staging, 0, image_size, 0, pixels);
 
-    // TODO: Make this generic for texture types
+    // NOTE: Lots of assumptions here, different texture types will require
+    // different options here.
     vulkan_image_create(
         &context,
         VK_IMAGE_TYPE_2D,
@@ -698,6 +709,7 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
     VkQueue queue = context.device.graphics_queue;
     vulkan_command_buffer_allocate_and_begin_single_use(&context, pool, &temp_buffer);
 
+    // Transition the layout from whatever it is currently to optimal for recieving data.
     vulkan_image_transition_layout(
         &context,
         &temp_buffer,
@@ -706,9 +718,10 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
+    // Copy the data from the buffer.
     vulkan_image_copy_from_buffer(&context, &data->image, staging.handle, &temp_buffer);
-    vulkan_buffer_destroy(&context, &staging);
 
+    // Transition from optimal for data reciept to shader-read-only optimal layout.
     vulkan_image_transition_layout(
         &context,
         &temp_buffer,
@@ -718,7 +731,9 @@ void vulkan_renderer_create_texture(const char* name, b8 auto_release, i32 width
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vulkan_command_buffer_end_single_use(&context, pool, &temp_buffer, queue);
+    vulkan_buffer_destroy(&context, &staging);
 
+    // Create a sampler for the texture
     VkSamplerCreateInfo sampler_info = {VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
     // TODO: These filters should be configurable.
     sampler_info.magFilter = VK_FILTER_LINEAR;
