@@ -194,7 +194,7 @@ b8 vulkan_initialize(renderer_backend* backend, const char* application_name) {
     for (u32 i = 0; i < context.swapchain.image_count; i++) {
         context.images_in_flight[i] = NULL;
     }
-    if (!vulkan_object_shader_create(&context, &context.object_shader)) {
+    if (!vulkan_object_shader_create(&context, backend->default_diffuse, &context.object_shader)) {
         KERROR("Error loading built-in basic_lighting shader.");
         return false;
     }
@@ -766,13 +766,15 @@ void vulkan_renderer_destroy_texture(struct texture* texture) {
     vkDeviceWaitIdle(context.device.logical_device);
 
     vulkan_texture_data* data = (vulkan_texture_data*)texture->internal_data;
+    if (data != NULL) {
+        vulkan_image_destroy(&context, &data->image);
+        kzero_memory(&data->image, sizeof(vulkan_image));
+        vkDestroySampler(context.device.logical_device, data->sampler, context.allocator);
+        data->sampler = 0;
 
-    vulkan_image_destroy(&context, &data->image);
-    kzero_memory(&data->image, sizeof(vulkan_image));
-    vkDestroySampler(context.device.logical_device, data->sampler, context.allocator);
-    data->sampler = 0;
+        kfree(texture->internal_data, sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
+    }
 
-    kfree(texture->internal_data, sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
     kzero_memory(texture, sizeof(struct texture));
 }
 b8 vulkan_object_shader_acquire_resources(vulkan_context* context, struct vulkan_object_shader* shader, u32* out_object_id) {

@@ -10,7 +10,9 @@
 
 #define BUILTIN_SHADER_NAME_OBJECT "Builtin.ObjectShader"
 
-b8 vulkan_object_shader_create(vulkan_context* context, vulkan_object_shader* out_shader) {
+b8 vulkan_object_shader_create(vulkan_context* context, texture* default_texture, vulkan_object_shader* out_shader) {
+    out_shader->default_diffuse = default_texture;
+
     char stage_type_strs[OBJECT_SHADER_STAGE_COUNT][5] = {"vert", "frag"};
     VkShaderStageFlagBits stage_types[OBJECT_SHADER_STAGE_COUNT] = {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT};
     for (u32 i = 0; i < OBJECT_SHADER_STAGE_COUNT; i++) {
@@ -281,6 +283,11 @@ void vulkan_object_shader_update_object(vulkan_context* context, struct vulkan_o
     for (u32 sampler_index = 0; sampler_index < sampler_count; sampler_index++) {
         texture* t = data.textures[sampler_index];
         u32* descriptor_generation = &object_state->descriptor_states[descriptor_index].generations[image_index];
+
+        if (t->generation == INVALID_ID) {
+            t = shader->default_diffuse;
+            *descriptor_generation = INVALID_ID;
+        }
 
         if (t && (*descriptor_generation != t->generation || *descriptor_generation == INVALID_ID)) {
             vulkan_texture_data* internal_data = (vulkan_texture_data*)t->internal_data;

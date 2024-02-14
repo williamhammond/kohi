@@ -3,6 +3,7 @@
 #include <core/input.h>
 #include <core/kmemory.h>
 #include <core/logger.h>
+#include <core/event.h>
 #include <math/kmath.h>
 
 // Hack: Remove this, it should not be available outside the engine
@@ -67,6 +68,12 @@ b8 game_update(game* game_inst, f32 delta_time) {
     b8 key_down = input_was_button_down('M');
     if (input_is_key_up('M') && input_was_key_down('M')) {
         KDEBUG("Allocations: %llu (%llu this frame)", alloc_count, alloc_count - prev_alloc_count);
+    }
+
+    if (input_is_key_up('T') && input_was_key_down('T')) {
+        KDEBUG("Swapping texture!");
+        event_context context = {};
+        event_fire(EVENT_CODE_DEBUG0, game_inst, context);
     }
 
     game_state* state = (game_state*)game_inst->state;
